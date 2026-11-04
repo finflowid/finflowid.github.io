@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kebijakan Privasi FinFlow</title>
+<meta name="description" content="Kebijakan privasi dan ketentuan Premium aplikasi FinFlow.">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#F3F5FA;--card:#FFFFFF;--text:#0F172A;--muted:#5B6782;--line:#E2E8F0;--pri:#4338CA;--soft:#EEF2FF;color-scheme:light}
+  @media (prefers-color-scheme: dark){:root{--bg:#0A0F1E;--card:#131A2D;--text:#E8EBF7;--muted:#97A2C0;--line:#25304C;--pri:#A5B4FC;--soft:#1D2150;color-scheme:dark}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}
+  main{max-width:720px;margin:0 auto;padding:32px max(18px,env(safe-area-inset-left)) 60px}
+  h1{font-size:28px;line-height:1.2;margin:0 0 4px;text-wrap:balance}
+  h2{font-size:19px;margin:34px 0 8px;text-wrap:balance}
+  h3{font-size:16px;margin:20px 0 4px}
+  p,li{max-width:66ch}
+  ul{padding-left:20px}
+  li+li{margin-top:4px}
+  a{color:var(--pri)}
+  .meta{color:var(--muted);font-size:14px}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:18px 0}
+  .box p{margin:0}
+  .fill{background:var(--soft);border-radius:6px;padding:0 5px;font-weight:600}
+  nav a{margin-right:14px;font-weight:600;font-size:14px}
+  footer{margin-top:40px;color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Kebijakan Privasi FinFlow</h1>
+  <p class="meta">Berlaku sejak 5 November 2026 · Pengelola: Frmn</p>
+  <nav><a href="#privasi">Privasi</a><a href="#premium">Ketentuan Premium</a><a href="#kontak">Kontak</a></nav>
+
+  <div class="box"><p><b>Ringkasnya:</b> catatan keuanganmu disimpan di HP kamu sendiri. Kami tidak memasang iklan, tidak melacak aktivitasmu, dan tidak menjual data. Data baru keluar dari HP jika kamu sendiri menyalakan sinkron Google Sheets atau mengaktifkan kode Premium.</p></div>
+
+  <h2 id="privasi">1. Data yang disimpan di perangkatmu</h2>
+  <ul>
+    <li>Nama panggilan, username, dan <b>hash</b> PIN (PIN aslinya tidak disimpan).</li>
+    <li>Transaksi, dompet, kategori, budget, target tabungan, utang-piutang, dan transaksi rutin yang kamu catat, termasuk nama dan nomor WhatsApp orang yang kamu isi di catatan utang.</li>
+    <li>Foto struk yang kamu lampirkan (dikompres, hanya di HP ini).</li>
+  </ul>
+  <p>Data ini tersimpan di penyimpanan browser/aplikasi pada perangkatmu dan tidak kami terima. Jika kamu menghapus data browser, mencopot aplikasi, atau kehilangan HP tanpa backup, data tersebut hilang. Gunakan fitur <b>Backup</b> secara rutin.</p>
+
+  <h2>2. Sinkron Google Sheets (opsional)</h2>
+  <p>Jika kamu menyalakan sinkron, data catatan keuangan dikirim ke Google Sheet melalui Google Apps Script pada alamat yang kamu atau admin pasang. Siapa pun yang memiliki Sheet tersebut dapat membaca isinya. PIN tidak dikirim; yang dikirim adalah token turunan PIN, dan server hanya menyimpan hash-nya. Foto struk tidak ikut disinkron.</p>
+
+  <h2>3. Lisensi Premium</h2>
+  <p>Saat kamu mengaktifkan kode Premium, aplikasi mengirim ke server lisensi milik pengelola: kode Premium, <b>ID perangkat acak</b> yang dibuat aplikasi (bukan IMEI, nomor HP, atau data akun Google), versi aplikasi, dan waktu aktivasi. Aplikasi mengecek ulang status kode secara berkala saat online. Data catatan keuanganmu <b>tidak</b> dikirim ke server lisensi. Pengelola juga dapat mencatat nama/kontak pembeli yang kamu berikan saat membeli, untuk keperluan layanan pelanggan.</p>
+
+  <h2>4. Layanan pihak ketiga</h2>
+  <ul>
+    <li><b>Google Fonts</b> untuk huruf, dan <b>cdnjs (Cloudflare)</b> untuk pustaka pembuat PDF/Excel saat fitur itu dipakai. Seperti saat membuka situs web biasa, penyedia ini dapat melihat alamat IP dan jenis browsermu.</li>
+    <li><b>Google Apps Script / Google Sheets</b> bila sinkron atau lisensi dipakai.</li>
+    <li><b>WhatsApp</b> hanya terbuka bila kamu menekan tombol "Ingatkan via WhatsApp".</li>
+    <li>Tempat hosting situs aplikasi (mis. GitHub Pages) dapat mencatat log akses standar.</li>
+  </ul>
+
+  <h2>5. Yang tidak kami lakukan</h2>
+  <ul><li>Tidak ada iklan, pelacak, atau analitik pihak ketiga.</li><li>Tidak menjual, menyewakan, atau membagikan data pribadimu.</li><li>Tidak meminta akses kontak, lokasi, atau galeri di luar foto yang kamu pilih sendiri.</li></ul>
+
+  <h2>6. Keamanan</h2>
+  <p>PIN disimpan dalam bentuk hash dan bisa dipakai untuk mengunci aplikasi. PIN adalah kunci aplikasi, bukan enkripsi penuh, jadi jaga HP-mu dan gunakan PIN yang tidak mudah ditebak. Koneksi ke server sinkron dan lisensi memakai HTTPS.</p>
+
+  <h2>7. Hak kamu</h2>
+  <p>Sesuai Undang-Undang No. 27 Tahun 2022 tentang Pelindungan Data Pribadi, kamu berhak mengakses, memperbaiki, dan menghapus data pribadimu, serta menarik persetujuan. Kamu bisa melakukannya sendiri di aplikasi: <i>Pengaturan › Backup</i> (mengunduh salinan), <i>Hapus semua data</i>, atau <i>Hapus akun dari HP ini</i>. Untuk data di server sinkron atau lisensi yang dikelola pengelola, hubungi kontak di bawah.</p>
+
+  <h2>8. Pengguna anak</h2>
+  <p>FinFlow tidak ditujukan untuk anak di bawah 13 tahun dan tidak sengaja mengumpulkan data anak.</p>
+
+  <h2>9. Perubahan kebijakan</h2>
+  <p>Jika kebijakan ini berubah, tanggal berlaku di atas akan diperbarui dan perubahan penting akan diberitahukan di aplikasi.</p>
+
+  <h2 id="premium">Ketentuan Premium</h2>
+  <ul>
+    <li>Premium dibeli <b>sekali bayar</b> dan berlaku tanpa batas waktu untuk versi FinFlow yang tersedia, selama layanan lisensi masih berjalan.</li>
+    <li>Satu kode dapat dipakai di jumlah HP yang tertera saat pembelian (umumnya 2 HP). Pindah HP: gunakan <i>Pengaturan › Premium › Lepas dari HP ini</i>, atau hubungi pengelola untuk reset.</li>
+    <li>Kode bersifat pribadi. Kode yang disebarluaskan, dijual ulang, atau terkait pembayaran yang dibatalkan dapat dicabut.</li>
+    <li>Pengembalian dana: dana dapat dikembalikan penuh dalam 3 hari setelah pembelian jika kode belum diaktifkan. Hubungi kontak di bawah.</li>
+    <li>Versi gratis tetap bisa dipakai tanpa batas waktu. Jika Premium tidak aktif lagi, data tidak dihapus; hanya fitur Premium yang terkunci.</li>
+    <li>Aplikasi disediakan "sebagaimana adanya". FinFlow adalah alat pencatat dan bukan nasihat keuangan.</li>
+  </ul>
+
+  <h2 id="kontak">Kontak</h2>
+  <p>Frmn · WhatsApp: <a href="https://wa.me/6285648115397" target="_blank" rel="noopener">0856-4811-5397</a></p>
+  <footer>FinFlow · <a href="./">Buka aplikasi</a></footer>
+</main>
+</body>
+</html>

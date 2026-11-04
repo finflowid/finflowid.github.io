@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FinFlow — Catatan Keuangan Anak Kos & Keluarga</title>
+<meta name="description" content="Catat pemasukan & pengeluaran, lihat jatah aman per hari, atur target tabungan dan utang-piutang. Bisa offline, data tetap di HP kamu.">
+<meta property="og:title" content="FinFlow — biar nggak boncos di akhir bulan">
+<meta property="og:description" content="Aplikasi catatan keuangan yang bisa offline. Coba gratis.">
+<meta property="og:image" content="screenshots/beranda.png">
+<meta name="theme-color" content="#4F46E5">
+<link rel="icon" href="icons/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Layout: satu kolom sempit di HP, dua kolom di hero & perbandingan saat layar lebar */
+  :root{--bg:#F3F5FA;--card:#FFFFFF;--text:#0F172A;--muted:#5B6782;--line:#E2E8F0;--pri:#4F46E5;--pri2:#7C3AED;--teal:#0D9488;--soft:#EEF2FF;--prit:#4338CA;--gold:#B45309;--goldsoft:#FFF7E6;
+        --font:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color-scheme:light}
+  @media (prefers-color-scheme: dark){:root{--bg:#0A0F1E;--card:#131A2D;--text:#E8EBF7;--muted:#97A2C0;--line:#25304C;--soft:#1D2150;--prit:#A5B4FC;--gold:#FBBF24;--goldsoft:#2E2410;color-scheme:dark}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 var(--font);-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:1040px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right))}
+  header.top{display:flex;align-items:center;justify-content:space-between;padding-block:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;text-decoration:none}
+  .brand img{width:34px;height:34px;border-radius:10px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:14px;font-weight:800;text-decoration:none;border:1px solid var(--line);background:var(--card);font-size:15.5px}
+  .btn.pri{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border:0;box-shadow:0 10px 24px -10px rgba(79,70,229,.7)}
+  .btn:focus-visible,a:focus-visible{outline:3px solid var(--prit);outline-offset:3px}
+  .hero{display:grid;gap:28px;align-items:center;padding-block:24px 40px}
+  @media (min-width:860px){.hero{grid-template-columns:1.1fr .9fr}}
+  .eyebrow{display:inline-block;background:var(--soft);color:var(--prit);font-weight:700;font-size:13px;letter-spacing:.04em;padding:5px 12px;border-radius:99px}
+  h1{font-size:clamp(32px,6vw,52px);line-height:1.08;letter-spacing:-.03em;margin:14px 0 14px;text-wrap:balance}
+  h1 em{font-style:normal;background:linear-gradient(135deg,var(--pri),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:18px;color:var(--muted);max-width:52ch;margin:0 0 22px}
+  .cta{display:flex;flex-wrap:wrap;gap:10px}
+  .note{font-size:13.5px;color:var(--muted);margin-top:12px}
+  .phone{justify-self:center;width:min(300px,78vw);aspect-ratio:780/1688;max-width:100%;border-radius:38px;padding:10px;background:#0F172A;box-shadow:0 30px 60px -25px rgba(15,23,42,.55)}
+  .phone img{display:block;width:100%;height:100%;object-fit:cover;border-radius:30px}
+  section{padding-block:36px}
+  h2{font-size:clamp(24px,4vw,32px);letter-spacing:-.02em;line-height:1.2;margin:0 0 8px;text-wrap:balance}
+  .sub{color:var(--muted);margin:0 0 22px;max-width:60ch}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+  .feat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+  .feat .ic{font-size:26px}
+  .feat h3{margin:8px 0 4px;font-size:16.5px}
+  .feat p{margin:0;color:var(--muted);font-size:14.5px}
+  .shots{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+  .shots figure{margin:0;flex:0 0 auto;width:220px}
+  .shots img{width:100%;border-radius:20px;border:1px solid var(--line);display:block}
+  .shots figcaption{font-size:13.5px;color:var(--muted);margin-top:6px}
+  .tbl-wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:18px}
+  table{border-collapse:collapse;width:100%;min-width:480px;font-size:15px}
+  th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  th{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  td.c{text-align:center}
+  tr:last-child td{border-bottom:0}
+  .prem{color:var(--gold);font-weight:800}
+  .price{display:grid;gap:14px;margin-top:18px}
+  @media (min-width:700px){.price{grid-template-columns:1fr 1fr}}
+  .plan{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px}
+  .plan.best{border:2px solid var(--gold);background:linear-gradient(180deg,var(--goldsoft),var(--card) 60%)}
+  .plan .amt{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:4px 0 8px;font-variant-numeric:tabular-nums}
+  .plan ul{padding-left:20px;margin:0 0 18px;color:var(--muted)}
+  .plan .btn{width:100%}
+  .steps{counter-reset:s;display:grid;gap:12px;padding:0;list-style:none;margin:0}
+  .steps li{counter-increment:s;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px 14px 56px;position:relative}
+  .steps li:before{content:counter(s);position:absolute;left:16px;top:14px;width:28px;height:28px;border-radius:9px;background:var(--soft);color:var(--prit);font-weight:800;display:flex;align-items:center;justify-content:center}
+  details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  details+details{margin-top:10px}
+  summary{font-weight:700;cursor:pointer}
+  details p{margin:8px 0 0;color:var(--muted)}
+  .final{text-align:center;background:linear-gradient(135deg,#4F46E5,#7C3AED 55%,#0D9488);color:#fff;border-radius:26px;padding:34px 20px}
+  .final p{opacity:.9;margin:0 auto 18px;max-width:46ch}
+  .final .btn{background:#fff;color:#312E81;border:0}
+  footer{color:var(--muted);font-size:14px;padding-block:30px;display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between}
+  @media (prefers-reduced-motion:no-preference){.phone{animation:float 6s ease-in-out infinite}@keyframes float{50%{transform:translateY(-8px)}}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="./"><img src="icons/icon-192.png" alt="">FinFlow</a>
+    <a class="btn" href="./">Buka aplikasi</a>
+  </header>
+
+  <div class="hero">
+    <div>
+      <span class="eyebrow">Untuk mahasiswa, anak kos & keluarga</span>
+      <h1>Uang bulanan cukup <em>sampai akhir bulan</em>.</h1>
+      <p class="lead">FinFlow menghitung jatah aman per hari dari budget-mu, mencatat semua dompet (tunai, bank, GoPay, Dana), dan mengingatkan tagihan & utang. Bisa dipakai tanpa internet.</p>
+      <div class="cta"><a class="btn pri" href="./">Coba gratis sekarang</a><a class="btn" id="buyTop" href="#harga">Lihat Premium</a></div>
+      <p class="note">Tanpa iklan · Data tetap di HP kamu · Pasang di Android & iPhone tanpa Play Store</p>
+    </div>
+    <div class="phone"><img src="screenshots/beranda.png" alt="Tampilan beranda FinFlow: total saldo, dompet, dan jatah aman per hari"></div>
+  </div>
+
+  <section>
+    <h2>Yang bikin FinFlow beda</h2>
+    <p class="sub">Dibuat untuk kebiasaan keuangan sehari-hari di Indonesia.</p>
+    <div class="grid">
+      <div class="feat"><div class="ic">💡</div><h3>Jatah aman per hari</h3><p>Atur budget bulanan, FinFlow menghitung berapa yang aman dipakai hari ini supaya tidak boncos.</p></div>
+      <div class="feat"><div class="ic">⚡</div><h3>Catat dalam 3 detik</h3><p>Ketik "kemarin kopi 18k gopay" — nominal, kategori, dompet, dan tanggal langsung terisi.</p></div>
+      <div class="feat"><div class="ic">👛</div><h3>Semua dompet</h3><p>Tunai, rekening, e-wallet, celengan. Pindah saldo lengkap dengan biaya admin.</p></div>
+      <div class="feat"><div class="ic">🤝</div><h3>Utang-piutang</h3><p>Catat cicilan, lihat yang telat bayar, dan ingatkan teman lewat WhatsApp sekali ketuk.</p></div>
+      <div class="feat"><div class="ic">🔁</div><h3>Tagihan rutin otomatis</h3><p>Kos, kuota, langganan, gaji — tercatat sendiri saat jatuh tempo.</p></div>
+      <div class="feat"><div class="ic">📅</div><h3>Bulan mengikuti gajian</h3><p>Gajian tanggal 25? Atur awal bulan sesuai tanggal gajianmu.</p></div>
+      <div class="feat"><div class="ic">🔒</div><h3>Privat & bisa offline</h3><p>Dikunci PIN, data di HP sendiri, tetap jalan tanpa sinyal.</p></div>
+      <div class="feat"><div class="ic">📊</div><h3>Statistik & insight</h3><p>Diagram per kategori, tren 6 bulan, dan hari paling boros.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Lihat tampilannya</h2>
+    <div class="shots">
+      <figure><img src="screenshots/beranda.png" alt="Beranda" loading="lazy"><figcaption>Beranda & jatah harian</figcaption></figure>
+      <figure><img src="screenshots/statistik.png" alt="Statistik" loading="lazy"><figcaption>Statistik per kategori</figcaption></figure>
+      <figure><img src="screenshots/rencana.png" alt="Target tabungan" loading="lazy"><figcaption>Target tabungan</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="harga">
+    <h2>Gratis untuk mulai, Premium kalau butuh lebih</h2>
+    <p class="sub">Versi gratis sudah cukup untuk mencatat sehari-hari. Premium membuka semua batas, sekali bayar.</p>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Fitur</th><th class="c">Gratis</th><th class="c prem">Premium</th></tr></thead>
+      <tbody>
+        <tr><td>Catat pemasukan & pengeluaran</td><td class="c">Tanpa batas</td><td class="c">Tanpa batas</td></tr>
+        <tr><td>Dompet</td><td class="c">3</td><td class="c">Tanpa batas</td></tr>
+        <tr><td>Budget per kategori (+ budget total)</td><td class="c">2</td><td class="c">Tanpa batas</td></tr>
+        <tr><td>Target tabungan</td><td class="c">1</td><td class="c">Tanpa batas</td></tr>
+        <tr><td>Transaksi rutin</td><td class="c">2</td><td class="c">Tanpa batas</td></tr>
+        <tr><td>Utang-piutang & pengingat WhatsApp</td><td class="c">✓</td><td class="c">✓</td></tr>
+        <tr><td>Statistik, insight, backup, ekspor CSV</td><td class="c">✓</td><td class="c">✓</td></tr>
+        <tr><td>Laporan PDF & Excel</td><td class="c">—</td><td class="c">✓</td></tr>
+        <tr><td>Foto struk / nota</td><td class="c">—</td><td class="c">✓</td></tr>
+        <tr><td>Sinkron Google Sheets antar-HP</td><td class="c">—</td><td class="c">✓</td></tr>
+      </tbody>
+    </table></div>
+    <div class="price">
+      <div class="plan"><b>Gratis</b><div class="amt">Rp 0</div><ul><li>Semua fitur inti</li><li>Tanpa iklan</li><li>Bisa dipakai selamanya</li></ul><a class="btn block" href="./">Mulai gratis</a></div>
+      <div class="plan best"><b class="prem">⭐ Premium</b><div class="amt" id="price">Rp 13.000</div><ul><li>Sekali bayar, tanpa langganan</li><li>1 kode untuk <span id="maxhp">2</span> HP</li><li>Semua batas dibuka</li></ul><a class="btn pri" id="buyBtn" href="#">Beli Premium</a></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Cara pasang di HP</h2>
+    <ol class="steps">
+      <li><b>Buka aplikasinya</b> lewat tombol "Coba gratis" di halaman ini.</li>
+      <li><b>Android:</b> tekan tombol hijau "📲 Pasang FinFlow di HP". <b>iPhone:</b> Safari › Bagikan › Tambah ke Layar Utama.</li>
+      <li><b>Daftar dengan PIN</b>, isi saldo awal tiap dompet, lalu mulai mencatat. Untuk Premium: Pengaturan › Upgrade ke Premium › masukkan kode.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Pertanyaan yang sering ditanya</h2>
+    <details><summary>Apakah data saya aman?</summary><p>Catatan keuangan tersimpan di HP kamu, dikunci PIN, tanpa iklan dan pelacak. Data baru keluar dari HP jika kamu menyalakan sinkron Google Sheets sendiri.</p></details>
+    <details><summary>Bisa dipakai tanpa internet?</summary><p>Bisa. Setelah dibuka sekali, aplikasi tetap jalan offline. Internet hanya perlu untuk aktivasi Premium (sekali), sinkron, dan membuat PDF/Excel pertama kali.</p></details>
+    <details><summary>Kalau ganti HP, datanya hilang?</summary><p>Tidak, asal kamu pakai Backup (file .json) lalu Pulihkan di HP baru, atau pakai sinkron Google Sheets (Premium).</p></details>
+    <details><summary>Premium berlangganan?</summary><p>Tidak. Sekali bayar. Pindah HP? Lepas kode dari HP lama di Pengaturan › Premium, lalu aktifkan di HP baru.</p></details>
+    <details><summary>Ada di Play Store?</summary><p id="faqPlay">Saat ini dipasang langsung dari browser (lebih ringan, tanpa iklan). Versi Play Store sedang disiapkan.</p></details>
+  </section>
+
+  <section>
+    <div class="final"><h2>Mulai atur uangmu hari ini</h2><p>Gratis, tanpa daftar email. Cukup username dan PIN.</p><a class="btn" href="./">Coba FinFlow gratis</a></div>
+  </section>
+
+  <footer><span>© <span id="yr">2026</span> FinFlow · <span id="seller">Frmn</span></span><span><a href="kebijakan-privasi.html">Kebijakan privasi</a> · <a href="kebijakan-privasi.html#premium">Ketentuan Premium</a> · <a id="waLink" href="#">Kontak</a></span></footer>
+</div>
+<script>
+  /* ===== Ubah di sini ===== */
+  var PROMO = {
+    buyUrl: '',               // link beli: Lynk.id / Karyakarsa / https://wa.me/62812xxxx?text=Mau%20beli%20FinFlow%20Premium
+    price: 'Rp 13.000',
+    maxHp: 2,
+    seller: 'Frmn',
+    whatsapp: '6285648115397'              // contoh: 6281234567890
+  };
+  (function () {
+    var buy = PROMO.buyUrl || (PROMO.whatsapp ? 'https://wa.me/' + PROMO.whatsapp + '?text=' + encodeURIComponent('Halo, saya mau beli FinFlow Premium') : '');
+    var b = document.getElementById('buyBtn');
+    if (buy) { b.href = buy; b.target = '_blank'; b.rel = 'noopener'; } else { b.href = '#harga'; b.textContent = 'Segera hadir'; }
+    document.getElementById('price').textContent = PROMO.price;
+    document.getElementById('maxhp').textContent = PROMO.maxHp;
+    document.getElementById('seller').textContent = PROMO.seller;
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    var wa = document.getElementById('waLink');
+    if (PROMO.whatsapp) { wa.href = 'https://wa.me/' + PROMO.whatsapp; wa.target = '_blank'; wa.rel = 'noopener'; } else { wa.href = 'kebijakan-privasi.html#kontak'; }
+  })();
+</script>
+</body>
+</html>
