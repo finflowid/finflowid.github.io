@@ -1,6 +1,6 @@
 /* FinFlow service worker — membuat aplikasi bisa dibuka tanpa internet.
    Setiap kali index.html diperbarui, naikkan angka VERSION supaya HP pengguna mengambil versi baru. */
-const VERSION = '6.2.2';
+const VERSION = '6.3.0';
 const CACHE = 'finflow-app-' + VERSION;
 const LIB_CACHE = 'finflowlib-v1';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png'];
