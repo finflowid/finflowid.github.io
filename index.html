@@ -287,6 +287,25 @@ code{background:var(--card2);padding:1px 5px;border-radius:6px;font-size:12.5px}
 .tool span{font-size:22px}
 .tool:active{transform:scale(.97)}
 .tip{background:linear-gradient(180deg,var(--pri-soft),var(--card) 70%)}
+.tour{text-align:center;padding:6px 4px 2px}
+.tour-ic{font-size:56px;line-height:1.1;margin-bottom:8px}
+.tour h2{font-size:19px;margin:0 0 8px}
+.tour p{margin:0 auto;max-width:300px;line-height:1.55}
+.tour-dots{display:flex;gap:6px;justify-content:center;margin-top:16px}
+.tour-dots i{width:7px;height:7px;border-radius:99px;background:var(--line)}
+.tour-dots i.on{width:20px;background:var(--pri)}
+.opt-card{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:14px;margin-top:10px;border-radius:16px;background:var(--card);border:1.5px solid var(--line);line-height:1.45}
+.opt-card:active{border-color:var(--pri)}
+.opt-card .e{font-size:28px;line-height:1}
+.more-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.more-grid .tool{width:auto}
+details.faq{border:1px solid var(--line);border-radius:14px;background:var(--card);margin-bottom:8px;overflow:hidden}
+details.faq summary{padding:12px 14px;font-weight:700;font-size:14px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:10px}
+details.faq summary::-webkit-details-marker{display:none}
+details.faq summary::after{content:'+';color:var(--muted);font-weight:800}
+details.faq[open] summary::after{content:'−'}
+details.faq p{margin:0;padding:0 14px 14px;font-size:13.5px;line-height:1.6;color:var(--muted)}
+@media (max-width:340px){.more-grid{grid-template-columns:repeat(3,1fr)}}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .cal-h{font-size:11px;font-weight:800;color:var(--muted);text-align:center;padding-bottom:2px}
 .cal-d{aspect-ratio:1/1.05;max-width:100%;border-radius:10px;background:var(--card2);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px;min-width:0}
@@ -351,7 +370,7 @@ code{background:var(--card2);padding:1px 5px;border-radius:6px;font-size:12.5px}
    ===================================================================== */
 const APP = {
   name: 'FinFlow',
-  version: '6.3.0',
+  version: '6.4.0',
   tagline: 'Catatan keuangan pribadi — mahasiswa & keluarga',
   contact: 'WA 0856-4811-5397 (Frmn)',          // contoh: 'WA 0812-xxxx-xxxx' atau email, tampil di Pengaturan > Tentang
   backupRemindDays: 14, // ingatkan backup jika belum backup sekian hari (mode offline)
@@ -362,6 +381,10 @@ const APP = {
   buyUrl: 'https://wa.me/6285648115397?text=Halo%20Frmn%2C%20saya%20mau%20beli%20FinFlow%20Premium',           // link halaman beli, mis. https://lynk.id/namamu/finflow atau https://wa.me/62812xxxx
   priceLabel: 'Rp 13.000 · sekali bayar',
   privacyUrl: 'kebijakan-privasi.html',
+  helpUrl: 'https://wa.me/6285648115397?text=Halo%20Frmn%2C%20saya%20butuh%20bantuan%20soal%20FinFlow',   // tombol "Tanya lewat WhatsApp" di Bantuan
+  shareUrl: 'https://finflowid.github.io/promo.html',   // link yang dibagikan lewat "Ajak teman"
+  trialDays: 7,          // lama uji coba Premium gratis (0 = tanpa uji coba), sekali per HP
+  promos: [],            // kode promo, mis. [{ code: 'KAMPUS', price: 'Rp 10.000', until: '2026-12-31' }]
   preview: false        // true hanya untuk versi link demo (unduh & sinkron dimatikan)
 };
 const LIB = {
@@ -922,7 +945,8 @@ async function startSession(u, opts) {
   seedDefaults(); saveDb();
   processRecurring(true);
   renderAll();
-  if (S.db.meta.needOnboard) { S.db.meta.needOnboard = false; saveDb(); openOnboarding(); }
+  trialTick();
+  if (S.db.meta.needOnboard) { S.db.meta.needOnboard = false; saveDb(); openTour({ first: true }); }
   else if (!opts.fresh && !opts.newUser) toast('Selamat datang, ' + displayName() + '!', 'success', 1800);
   if (!SHEETS.length) handleShortcut();
   recheckLicense();
@@ -935,6 +959,7 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) { hiddenAt = Date.now(); if (S.user) saveDb(); return; }
   if (!S.user) return;
   if (S.user.lockOnOpen !== false && S.user.username !== 'demo' && S.user.pinNumeric && hiddenAt && Date.now() - hiddenAt > 3 * 60 * 1000) { showLock(S.user.username); return; }
+  trialTick();
   if (processRecurring(true)) renderAll();
   syncNow(false);
 });
@@ -1116,13 +1141,14 @@ function renderHome() {
     '<button type="button" class="wcard add" data-act="manageWallets">⚙️<span>Kelola</span></button></div></div>';
   h += '<div class="grid3 sec"><button type="button" class="qa" data-act="newTx" data-type="expense"><span class="ic ic-red">−</span>Pengeluaran</button><button type="button" class="qa" data-act="newTx" data-type="income"><span class="ic ic-green">+</span>Pemasukan</button><button type="button" class="qa" data-act="newTx" data-type="transfer"><span class="ic ic-pri">⇄</span>Transfer</button></div>';
   h += '<form class="card row" data-submit="quickParse" style="padding:8px"><input class="input grow" name="q" placeholder="Ketik cepat: makan siang 25rb" autocomplete="off" style="border:0;background:transparent;min-height:40px"><button type="button" class="icon-btn" data-act="voice" aria-label="Input suara" style="box-shadow:none">🎤</button><button class="btn pri sm" type="submit" data-act="submitForm">Catat</button></form>';
-  h += toolsRow();
+  const simple = isSimple();
+  h += simple ? simpleToolsRow() : toolsRow();
+  h += trialCard();
   h += nudgeCard();
   h += dailyCard();
-  h += forecastCard();
-  h += wishReadyCard();
+  if (!simple) { h += forecastCard(); h += wishReadyCard(); }
   h += upcomingCard();
-  h += tipCard();
+  if (!simple) h += tipCard();
   const recent = sortTx(sm.list).slice(0, 6);
   h += '<div class="sec"><div class="sec-h"><h2>Transaksi terbaru</h2><button type="button" class="link" data-act="tab" data-tab="history">Lihat semua</button></div><div class="card" style="padding:6px 10px">' +
     (recent.length ? recent.map(t => txRow(t, true)).join('') : emptyBox('🧾', 'Belum ada transaksi di periode ini.<br>Tekan tombol <b>+</b> untuk mencatat.')) + '</div></div>';
@@ -1197,7 +1223,7 @@ function renderStats() {
   const base = S.ui.period.kind === 'month' ? (S.ui.period.offset || 0) : 0; const months = [];
   for (let i = -5; i <= 0; i++) { const mr = monthRange(base + i); months.push({ label: mr.shortLabel, inc: sum(S.db.txs.filter(t => !t.deleted && t.type === 'income' && inRange(t, mr)), t => +t.amount), exp: spentIn('__all', mr) }); }
   h += '<div class="card sec"><div class="row between"><h2 style="font-size:15px;margin:0">Tren 6 bulan</h2><span class="tiny muted"><span class="sw" style="display:inline-block;background:#10B981"></span> Masuk &nbsp;<span class="sw" style="display:inline-block;background:#F43F5E"></span> Keluar</span></div><div class="mt12">' + trendSvg(months) + '</div></div>';
-  h += calendarCard();
+  if (!isSimple()) h += calendarCard();
   h += '<div class="card sec"><h2 style="font-size:15px;margin:0 0 4px">💡 Insight</h2>' + insights(r, sm) + '</div>';
   h += businessCard(r);
   return h;
@@ -1224,7 +1250,8 @@ function insights(r, sm) {
 
 /* ---------- RENCANA ---------- */
 function renderPlan() {
-  const tabs = [['budget', '🧮 Budget'], ['goals', '🎯 Target'], ['debts', '🤝 Utang'], ['split', '🍽️ Patungan'], ['recurring', '🔁 Rutin'], ['wish', '🛍️ Wishlist'], ['challenge', '🏆 Tantangan']];
+  let tabs = [['budget', '🧮 Budget'], ['goals', '🎯 Target'], ['debts', '🤝 Utang'], ['split', '🍽️ Patungan'], ['recurring', '🔁 Rutin'], ['wish', '🛍️ Wishlist'], ['challenge', '🏆 Tantangan']];
+  if (isSimple()) tabs = tabs.filter(t => ['split', 'wish', 'challenge'].indexOf(t[0]) < 0 || t[0] === S.ui.plan);
   let h = '<div class="chips scroll" style="margin:6px 0 12px">' + tabs.map(t => '<button type="button" class="chip ' + (S.ui.plan === t[0] ? 'on' : '') + '" data-act="planTab" data-t="' + t[0] + '">' + t[1] + '</button>').join('') + '</div>';
   if (S.ui.plan === 'budget') h += planBudget();
   else if (S.ui.plan === 'goals') h += planGoals();
@@ -1861,7 +1888,24 @@ const PREMIUM_PERKS = [
 const CODE_ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function premiumSystemOn() { return !APP.preview && !!APP.licenseUrl; }
 function getLicense() { return LS.getJSON('ff6_license', null); }
-function isPremium() { if (!premiumSystemOn()) return true; const L = getLicense(); return !!(L && L.status === 'active'); }
+function isPremium() { if (!premiumSystemOn()) return true; const L = getLicense(); return !!(L && L.status === 'active') || trialLeftMs() > 0; }
+/* ---- uji coba gratis: sekali per HP, tanpa server ---- */
+function getTrial() { return LS.getJSON('ff6_trial', null); }
+function trialLeftMs() { const T = getTrial(); if (!T || !T.start) return 0; const now = Math.max(Date.now(), T.seen || 0); if (now < T.start) return 0; return Math.max(0, T.start + (T.days || 7) * 864e5 - now); }
+function trialDaysLeft() { return Math.ceil(trialLeftMs() / 864e5); }
+function trialAvailable() { return premiumSystemOn() && APP.trialDays > 0 && !getTrial() && !(getLicense() && getLicense().status === 'active'); }
+function startTrial() { if (!trialAvailable()) return false; LS.setJSON('ff6_trial', { start: Date.now(), seen: Date.now(), days: APP.trialDays }); return true; }
+function trialTick() {
+  const T = getTrial(); if (!T || !premiumSystemOn()) return;
+  if (Date.now() > (T.seen || 0)) { T.seen = Date.now(); LS.setJSON('ff6_trial', T); }
+  if (!T.endNotified && trialLeftMs() <= 0) { T.endNotified = true; LS.setJSON('ff6_trial', T); const L = getLicense(); if (!(L && L.status === 'active')) toast('Uji coba Premium selesai. Datamu tetap aman; fitur Premium terkunci lagi.', 'warn', 6000); }
+}
+/* ---- kode promo (diskon): daftar di APP.promos, dibawa ke pesan WA saat membeli ---- */
+function findPromo(code) { const c = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); if (!c) return null; return (APP.promos || []).find(p => String(p.code).toUpperCase() === c && (!p.until || p.until >= today())) || null; }
+function activePromo() { return findPromo(getGlobal().promo); }
+function hasPromos() { return (APP.promos || []).some(p => !p.until || p.until >= today()); }
+function buyLink() { const p = activePromo(); let u = APP.buyUrl || ''; if (p && /[?&]text=/.test(u)) u += encodeURIComponent(' (kode promo: ' + String(p.code).toUpperCase() + ')'); return u; }
+function priceHtml() { const p = activePromo(); return p ? '<s class="muted small">' + esc((APP.priceLabel || '').split('·')[0].trim()) + '</s> <b class="green">' + esc(p.price) + '</b> <span class="badge green">' + esc(String(p.code).toUpperCase()) + '</span>' : '<b>' + esc(APP.priceLabel || '-') + '</b>'; }
 function premTag() { return isPremium() ? '' : ' <span class="badge amber">⭐</span>'; }
 function deviceId() { let d = LS.get('ff6_device'); if (!d) { d = randHex(12); LS.set('ff6_device', d); } return d; }
 function normCode(s) { let c = String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); if (c.length === 14 && c.indexOf('FF') === 0) c = c.slice(2); return c; }
@@ -1913,9 +1957,13 @@ function openUpgrade(reason) {
   const s = openSheet({ title: '⭐ FinFlow Premium', body:
     (reason ? '<div class="item" style="display:block;margin-bottom:12px"><b>' + esc(reason) + '</b><div class="small muted">Upgrade ke Premium untuk membuka batasnya. Data kamu tetap aman.</div></div>' : '') +
     (revoked ? '<p class="hint bad">Lisensi sebelumnya (' + esc(maskCode(L.code)) + ') tidak aktif lagi' + (L.reason ? ': ' + esc(L.reason) : '') + '</p>' : '') +
+    (trialLeftMs() > 0 ? '<div class="item" style="margin-bottom:12px"><span class="tx-ic">🎁</span><span class="grow"><b>Uji coba Premium aktif</b><br><span class="small muted">Sisa ' + trialDaysLeft() + ' hari. Beli kode supaya lanjut tanpa batas.</span></span></div>' : '') +
+    (trialAvailable() ? '<button type="button" class="btn soft block" data-act="startTrial">🎁 Coba semua fitur gratis ' + APP.trialDays + ' hari</button><p class="hint center" style="margin-bottom:12px">Tanpa kode dan tanpa bayar. Setelah selesai, datamu tetap aman.</p>' : '') +
+    (getTrial() && trialLeftMs() <= 0 ? '<p class="hint">Uji coba gratis di HP ini sudah selesai. Lanjutkan dengan kode Premium.</p>' : '') +
     perksHtml() +
-    '<div class="row between mt12"><span class="muted small">Harga</span><b>' + esc(APP.priceLabel || '-') + '</b></div>' +
-    (APP.buyUrl ? '<a class="btn pri block mt12" href="' + esc(APP.buyUrl) + '" target="_blank" rel="noopener">Beli Premium</a>' : (APP.contact ? '<p class="hint">Beli kode Premium: ' + esc(APP.contact) + '</p>' : '')) +
+    '<div class="row between mt12"><span class="muted small">Harga</span><span id="premPrice">' + priceHtml() + '</span></div>' +
+    (hasPromos() ? '<div id="promoBox"><button type="button" class="link small" data-x="promo">Punya kode promo?</button></div>' : '') +
+    (APP.buyUrl ? '<a class="btn pri block mt12" id="premBuy" href="' + esc(buyLink()) + '" target="_blank" rel="noopener">Beli Premium</a>' : (APP.contact ? '<p class="hint">Beli kode Premium: ' + esc(APP.contact) + '</p>' : '')) +
     '<div class="set-title">Sudah punya kode?</div><form data-submit="noop" class="stack"><input class="input" id="premCode" name="code" maxlength="20" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="FF-XXXX-XXXX-XXXX" style="text-transform:uppercase;letter-spacing:.06em"><p class="hint bad form-err" id="premErr"></p><button type="button" class="btn green block" data-x="act">Aktifkan Premium</button></form>' +
     '<p class="hint center">Sekali bayar · 1 kode untuk beberapa HP (lihat ketentuan) · aktivasi butuh internet sekali.</p>' });
   const btn = $('[data-x=act]', s.el); const inp = $('#premCode', s.el);
@@ -1925,6 +1973,16 @@ function openUpgrade(reason) {
     closeAllSheets(); if (S.user) renderAll(); toast('⭐ Premium aktif! Terima kasih sudah mendukung ' + APP.name + '.', 'success', 4000);
   };
   btn.onclick = go; inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+  const pb = $('[data-x=promo]', s.el);
+  if (pb) pb.onclick = () => {
+    $('#promoBox', s.el).innerHTML = '<div class="row mt8" style="gap:8px"><input class="input grow" id="promoCode" maxlength="20" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="Kode promo" style="text-transform:uppercase"><button type="button" class="btn sm" data-x="usePromo">Pakai</button></div><p class="hint" id="promoMsg"></p>';
+    const pi = $('#promoCode', s.el); pi.focus();
+    const use = () => { const p = findPromo(pi.value); const msg = $('#promoMsg', s.el);
+      if (!p) { msg.className = 'hint bad'; msg.textContent = 'Kode promo tidak dikenal atau sudah berakhir.'; return; }
+      setGlobal({ promo: String(p.code).toUpperCase() }); $('#premPrice', s.el).innerHTML = priceHtml(); const b = $('#premBuy', s.el); if (b) b.href = buyLink();
+      msg.className = 'hint'; msg.textContent = 'Kode dipakai ✓ Harga jadi ' + p.price + (p.until ? ' (sampai ' + fmtDate(p.until) + ')' : '') + '. Tekan Beli Premium; kodenya ikut terkirim di pesan.'; toast('Kode promo dipakai ✓', 'success'); };
+    $('[data-x=usePromo]', s.el).onclick = use; pi.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); use(); } });
+  };
 }
 function openPremium() {
   if (APP.preview) return openSheet({ title: '⭐ Premium (mode demo)', body: '<p class="muted" style="margin-top:0">Di link demo semua fitur Premium dibuka supaya bisa dicoba.</p>' + perksHtml() });
@@ -1946,8 +2004,9 @@ function openPremium() {
 }
 function premiumRowHtml() {
   if (!premiumSystemOn() && !APP.preview) return '';
-  const on = isPremium();
-  return '<button type="button" class="item mt12" data-act="openPremium" style="border-color:' + (on ? 'var(--line)' : 'var(--amber)') + '"><span class="tx-ic">⭐</span><span class="grow"><b>' + (on ? 'Premium aktif' : 'Upgrade ke Premium') + '</b><br><span class="small muted">' + (on ? (APP.preview ? 'Mode demo: semua fitur terbuka' : 'Terima kasih sudah mendukung!') : 'Dompet & target tanpa batas, PDF/Excel, sinkron · ' + esc(APP.priceLabel || '')) + '</span></span><span class="chev muted">›</span></button>';
+  const on = isPremium(); const L = getLicense();
+  if (!(L && L.status === 'active') && trialLeftMs() > 0) return '<button type="button" class="item mt12" data-act="openPremium" style="border-color:var(--amber)"><span class="tx-ic">🎁</span><span class="grow"><b>Uji coba Premium · sisa ' + trialDaysLeft() + ' hari</b><br><span class="small muted">Ketuk untuk beli kode & lanjut tanpa batas · ' + esc(APP.priceLabel || '') + '</span></span><span class="chev muted">›</span></button>';
+  return '<button type="button" class="item mt12" data-act="openPremium" style="border-color:' + (on ? 'var(--line)' : 'var(--amber)') + '"><span class="tx-ic">⭐</span><span class="grow"><b>' + (on ? 'Premium aktif' : 'Upgrade ke Premium') + '</b><br><span class="small muted">' + (on ? (APP.preview ? 'Mode demo: semua fitur terbuka' : 'Terima kasih sudah mendukung!') : (trialAvailable() ? 'Coba gratis ' + APP.trialDays + ' hari · ' : 'Dompet & target tanpa batas, PDF/Excel, sinkron · ') + esc(APP.priceLabel || '')) + '</span></span><span class="chev muted">›</span></button>';
 }
 
 /* =====================================================================
@@ -2670,21 +2729,22 @@ function importWizard(rows, fname) {
 }
 
 /* ====================== PENGINGAT HARIAN ====================== */
+function remindUrl() { return (location.protocol.indexOf('http') === 0 && !APP.preview ? location.origin + location.pathname : 'https://finflowid.github.io/') + '?aksi=keluar'; }
 function openReminder() {
   const g = getGlobal(); const tz = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jakarta'; } catch (e) { return 'Asia/Jakarta'; } })();
   const s = openSheet({ title: '⏰ Pengingat harian', body: '<p class="muted small" style="margin-top:0">FinFlow akan mengingatkan lewat kalender HP setiap hari, walau aplikasinya sedang ditutup.</p>' +
     '<label class="field"><span>Jam pengingat</span><input class="input" type="time" name="tm" value="' + esc(g.reminderTime || '21:00') + '"></label>' +
     '<a class="btn pri block mt12" data-x="gcal" target="_blank" rel="noopener" href="#">📅 Tambahkan ke Google Calendar</a>' +
     (APP.preview ? '' : '<button type="button" class="btn block mt8" data-x="ics">Unduh file kalender (iPhone / kalender lain)</button>') +
-    '<p class="hint">Di Google Calendar tekan <b>Simpan</b>. Pengingat muncul setiap hari pada jam itu.</p>' });
+    '<p class="hint">Di Google Calendar tekan <b>Simpan</b>. Pengingat muncul setiap hari pada jam itu. Ketuk link di pengingatnya, FinFlow langsung terbuka di form catat pengeluaran.</p>' });
   const val = () => { const v = $('[name=tm]', s.el).value || '21:00'; setGlobal({ reminderTime: v }); return v; };
   const first = v => { const [h, m] = v.split(':').map(Number); const d = new Date(); d.setHours(h, m, 0, 0); if (d < new Date()) d.setDate(d.getDate() + 1); return d; };
   const stamp = d => d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) + 'T' + pad2(d.getHours()) + pad2(d.getMinutes()) + '00';
-  const link = () => { const d = first(val()); const e = new Date(d.getTime() + 10 * 60000); const url = location.protocol.indexOf('http') === 0 ? location.origin + location.pathname : 'https://finflowid.github.io/';
-    return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent('📝 Catat pengeluaran hari ini (FinFlow)') + '&details=' + encodeURIComponent('Buka FinFlow dan catat pengeluaranmu hari ini: ' + url) + '&dates=' + stamp(d) + '/' + stamp(e) + '&ctz=' + encodeURIComponent(tz) + '&recur=' + encodeURIComponent('RRULE:FREQ=DAILY'); };
+  const link = () => { const d = first(val()); const e = new Date(d.getTime() + 10 * 60000); const url = remindUrl();
+    return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent('📝 Catat pengeluaran hari ini (FinFlow)') + '&details=' + encodeURIComponent('Ketuk link ini untuk langsung mencatat: ' + url) + '&location=' + encodeURIComponent(url) + '&dates=' + stamp(d) + '/' + stamp(e) + '&ctz=' + encodeURIComponent(tz) + '&recur=' + encodeURIComponent('RRULE:FREQ=DAILY'); };
   const a = $('[data-x=gcal]', s.el); const upd = () => { a.href = link(); }; upd(); $('[name=tm]', s.el).addEventListener('change', upd);
   const ics = $('[data-x=ics]', s.el); if (ics) ics.onclick = () => { const d = first(val());
-    const body = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//FinFlow//ID', 'BEGIN:VEVENT', 'UID:finflow-reminder-' + Date.now() + '@finflow', 'DTSTAMP:' + stamp(new Date()), 'DTSTART:' + stamp(d), 'DURATION:PT10M', 'RRULE:FREQ=DAILY', 'SUMMARY:Catat pengeluaran hari ini (FinFlow)', 'BEGIN:VALARM', 'TRIGGER:PT0M', 'ACTION:DISPLAY', 'DESCRIPTION:Catat pengeluaran hari ini di FinFlow', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+    const body = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//FinFlow//ID', 'BEGIN:VEVENT', 'UID:finflow-reminder-' + Date.now() + '@finflow', 'DTSTAMP:' + stamp(new Date()), 'DTSTART:' + stamp(d), 'DURATION:PT10M', 'RRULE:FREQ=DAILY', 'SUMMARY:Catat pengeluaran hari ini (FinFlow)', 'DESCRIPTION:Ketuk link ini untuk langsung mencatat: ' + remindUrl(), 'URL:' + remindUrl(), 'BEGIN:VALARM', 'TRIGGER:PT0M', 'ACTION:DISPLAY', 'DESCRIPTION:Catat pengeluaran hari ini di FinFlow', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
     downloadBlob(new Blob([body], { type: 'text/calendar' }), 'Pengingat_FinFlow.ics'); toast('File kalender diunduh. Buka file itu untuk menambahkan pengingat.', 'success', 4500); };
 }
 
@@ -2798,6 +2858,7 @@ function openQuiz() {
 function moreSettingsHtml(row) {
   const g = getGlobal(); const p = prefs();
   return '<div class="set-title">Fitur</div><div class="set-group">' +
+    row('✨', 'Semua fitur lainnya', 'openMore') +
     row('⏰', 'Pengingat harian<br><span class="tiny muted">' + esc(g.reminderTime ? 'Jam ' + g.reminderTime : 'lewat kalender HP') + '</span>', 'openReminder') +
     row('🧮', 'Bagi uang bulanan ke pos-pos', 'openAllocate') +
     row('⏱️', 'Penghasilan per jam<br><span class="tiny muted">' + (p.hourlyWage ? rp(p.hourlyWage) + '/jam' : 'untuk hitung harga dalam jam kerja') + '</span>', 'openWage') +
@@ -2829,6 +2890,155 @@ function seedDemoMore() {
   put('wishes', { id: 'ws_jaket', name: 'Jaket hoodie', price: 189000, waitDays: 3, url: '', addedAt: addDays(t0, -9), status: 'skipped', decidedAt: addDays(t0, -6) });
   put('challenges', { id: 'ch_demo', type: 'log', days: 14, start: addDays(t0, -5) });
   put('prefs', { id: 'profile', hourlyWage: 20000 });
+}
+/* =====================================================================
+   v6.4 — KEMUDAHAN: mode sederhana, tur pemula, bantuan, ajak teman,
+   uji coba Premium (kartu), dan "Bagikan ke FinFlow".
+   ===================================================================== */
+
+/* ---------------- mode sederhana ---------------- */
+function isSimple() { return !!(S.db && prefs().simple); }
+function setSimple(v) { put('prefs', { id: 'profile', simple: !!v }); commit(); }
+const MORE_TOOLS = [['📸', 'Scan struk', 'scanReceipt'], ['🍽️', 'Patungan', 'goPlan', 'split'], ['🛍️', 'Wishlist', 'goPlan', 'wish'], ['🏆', 'Tantangan', 'goPlan', 'challenge'], ['🎁', 'Rekap bulan', 'openRecap'], ['👨‍👩‍👧', 'Lapor ortu', 'openParentReport'], ['💳', 'Cicilan', 'newInstallment'], ['🧮', 'Bagi uang', 'openAllocate'], ['⏰', 'Pengingat', 'openReminder'], ['🧠', 'Kuis', 'openQuiz'], ['💌', 'Ajak teman', 'inviteFriend'], ['❓', 'Bantuan', 'openHelp']];
+function simpleToolsRow() { return '<button type="button" class="btn soft block sec" data-act="openMore">✨ Fitur lainnya: patungan, wishlist, rekap…</button>'; }
+function openMore() {
+  openSheet({ title: '✨ Fitur lainnya', body:
+    '<div class="more-grid">' + MORE_TOOLS.map(t => '<button type="button" class="tool" data-act="' + t[2] + '"' + (t[3] ? ' data-t="' + t[3] + '"' : '') + '><span>' + t[0] + '</span>' + esc(t[1]) + '</button>').join('') + '</div>' +
+    (isSimple() ? '<p class="hint center">Kamu memakai <b>tampilan sederhana</b>. Mau semua fitur tampil di Beranda?</p><button type="button" class="btn block" data-act="simpleOff">🚀 Pakai tampilan lengkap</button>' : '') });
+}
+
+/* ---------------- tur pemula ---------------- */
+const TOUR = [
+  ['👋', 'Selamat datang di FinFlow', 'Catatan keuangan yang simpel. Semua datamu disimpan di HP ini, bukan di server kami.'],
+  ['➕', 'Catat dalam 3 detik', 'Tekan tombol + di bawah, isi nominal, pilih kategori, lalu Simpan. Bisa juga ketik cepat: "makan siang 25rb".'],
+  ['💡', 'Tahu batas aman tiap hari', 'Atur budget bulanan. FinFlow menghitung berapa yang aman kamu pakai per hari sampai akhir bulan.'],
+  ['💾', 'Jangan lupa backup', 'Karena data ada di HP-mu sendiri, kirim backup ke Google Drive atau WA sesekali lewat Pengaturan.']
+];
+function openTour(opts) {
+  opts = opts || {}; let i = 0;
+  const s = openSheet({ title: 'Kenalan singkat', sticky: true, body: '' });
+  const done = () => { closeSheet(); if (opts.first) openOnboarding(); };
+  const dots = n => '<div class="tour-dots">' + Array.from({ length: TOUR.length + 1 }, (_, k) => '<i class="' + (k === n ? 'on' : '') + '"></i>').join('') + '</div>';
+  const draw = () => {
+    if (i < TOUR.length) {
+      const t = TOUR[i];
+      setSheetBody(s, '<div class="tour"><div class="tour-ic">' + t[0] + '</div><h2>' + esc(t[1]) + '</h2><p class="muted">' + esc(t[2]) + '</p>' + dots(i) + '</div>');
+      setSheetFoot(s, '<button type="button" class="btn" data-x="skip">Lewati</button><button type="button" class="btn pri" data-x="next">Lanjut</button>');
+      $('[data-x=skip]', s.el).onclick = done; $('[data-x=next]', s.el).onclick = () => { i++; draw(); };
+    } else {
+      setSheetBody(s, '<div class="tour"><h2>Mau tampilan seperti apa?</h2><p class="muted">Bisa diganti kapan saja di Pengaturan.</p></div>' +
+        '<button type="button" class="opt-card" data-x="simple"><span class="e">🌱</span><span><b>Sederhana</b> <span class="badge green">untuk pemula</span><br><span class="small muted">Yang penting saja: catat, saldo, budget, target. Fitur lain tetap ada di tombol "Fitur lainnya".</span></span></button>' +
+        '<button type="button" class="opt-card" data-x="full"><span class="e">🚀</span><span><b>Lengkap</b><br><span class="small muted">Semua fitur langsung tampil: patungan, wishlist, tantangan, perkiraan akhir bulan, tips.</span></span></button>' + dots(i));
+      setSheetFoot(s, '');
+      const pick = v => { put('prefs', { id: 'profile', simple: v }); commit({ noRender: true }); done(); renderAll(); };
+      $('[data-x=simple]', s.el).onclick = () => pick(true); $('[data-x=full]', s.el).onclick = () => pick(false);
+    }
+  };
+  draw();
+  /* tombol ✕ pada tur pertama tetap lanjut ke isi saldo awal */
+  $('.x-btn', s.el).addEventListener('click', () => { if (opts.first) openOnboarding(); });
+}
+
+/* ---------------- bantuan & tanya-jawab ---------------- */
+function faqList() {
+  const f = [
+    ['Data saya disimpan di mana?', 'Di HP kamu sendiri, bukan di server kami. Karena itu aplikasinya bisa dipakai tanpa internet, dan penjual tidak bisa melihat catatanmu.'],
+    ['Kenapa data saya bisa hilang?', 'Biasanya karena data browser/aplikasi dihapus, aplikasi dicopot, atau kamu membuka FinFlow dari browser lain. Supaya aman, rutin tekan Pengaturan › Kirim backup ke Google Drive / WA.'],
+    ['Bagaimana cara pindah ke HP baru?', 'Di HP lama: Pengaturan › Kirim backup (atau Backup data). Di HP baru: buka FinFlow, daftar dengan username yang sama, lalu Pengaturan › Pulihkan dari backup dan pilih file tadi.'],
+    ['Saya lupa PIN. Bagaimana?', 'PIN tidak bisa dilihat siapa pun. Di layar Masuk tekan "Lupa PIN", hapus akun dari HP ini, daftar ulang, lalu pulihkan dari file backup terakhir.'],
+    ['Cara memasang FinFlow jadi aplikasi?', 'Android (Chrome): menu ⋮ › Instal aplikasi / Tambahkan ke layar utama. iPhone (Safari): tombol Bagikan › Tambah ke Layar Utama.'],
+    ['Cara mencatat paling cepat?', '1) Ketik cepat di Beranda, mis. "bensin 20rb". 2) Tekan lama ikon FinFlow untuk pintasan Catat pengeluaran. 3) Dari bukti bayar e-wallet/bank tekan Bagikan lalu pilih FinFlow (Android, setelah aplikasi dipasang). 4) Pasang Pengingat harian supaya tidak lupa.'],
+    ['Salah catat, bisa diubah?', 'Bisa. Ketuk transaksinya di Beranda atau Riwayat, ubah, lalu Simpan. Untuk menghapus, buka transaksinya lalu tekan Hapus.']
+  ];
+  if (premiumSystemOn()) {
+    f.push(['Apa bedanya gratis dan Premium?', 'Versi gratis sudah bisa mencatat tanpa batas. Premium membuka dompet/target/budget tanpa batas, laporan PDF & Excel, scan struk, impor mutasi bank, laporan usaha, warna aplikasi, dan sinkron antar-HP. Harga: ' + (APP.priceLabel || '-') + '.']);
+    f.push(['Cara mengaktifkan Premium?', 'Beli kode lewat tombol Beli Premium, lalu buka Pengaturan › Upgrade ke Premium dan ketik kodenya (FF-XXXX-XXXX-XXXX). Aktivasi butuh internet sekali saja.']);
+  }
+  return f;
+}
+function openHelp() {
+  openSheet({ title: '❓ Bantuan', body:
+    faqList().map(q => '<details class="faq"><summary>' + esc(q[0]) + '</summary><p>' + esc(q[1]) + '</p></details>').join('') +
+    '<button type="button" class="btn soft block mt12" data-act="openTourAgain">🎬 Lihat tur singkat lagi</button>' +
+    (APP.helpUrl && !APP.preview ? '<a class="btn green block mt8" href="' + esc(APP.helpUrl) + '" target="_blank" rel="noopener">💬 Tanya lewat WhatsApp</a>' : '') });
+}
+
+/* ---------------- ajak teman ---------------- */
+function inviteFriend() {
+  const url = APP.shareUrl || (location.protocol.indexOf('http') === 0 ? location.origin + location.pathname : '');
+  const text = 'Aku pakai FinFlow buat catat uang jajan, budget, dan patungan. Gratis dan bisa dipakai tanpa internet. Coba deh:';
+  if (navigator.share && !APP.preview) { navigator.share({ title: APP.name, text: text, url: url }).catch(() => {}); return; }
+  window.open('https://wa.me/?text=' + encodeURIComponent(text + ' ' + url), '_blank', 'noopener');
+}
+
+/* ---------------- kartu uji coba Premium di Beranda ---------------- */
+function trialCard() {
+  if (!premiumSystemOn() || !S.user || S.user.username === 'demo') return '';
+  const L = getLicense(); if (L && L.status === 'active') return '';
+  const T = getTrial(); const g = getGlobal();
+  if (!T) {
+    if (!APP.trialDays || g.trialOfferHidden || S.db.txs.filter(t => !t.deleted).length < 5) return '';
+    return '<div class="card sec row" style="gap:12px;border-color:var(--amber)"><span style="font-size:26px">🎁</span><span class="grow small"><b>Coba Premium gratis ' + APP.trialDays + ' hari</b><br><span class="muted">Scan struk, PDF/Excel, dompet tanpa batas. Tanpa bayar.</span></span><span style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><button type="button" class="btn pri sm" data-act="startTrial">Coba</button><button type="button" class="link tiny" data-act="hideTrialOffer">Nanti</button></span></div>';
+  }
+  const left = trialLeftMs();
+  if (left > 0) { const d = trialDaysLeft(); if (d > 2) return '';
+    return '<div class="card sec row" style="gap:12px;border-color:var(--amber)"><span style="font-size:26px">⏳</span><span class="grow small"><b>Uji coba Premium sisa ' + d + ' hari</b><br><span class="muted">Lanjut tanpa batas: ' + esc(APP.priceLabel || '') + '</span></span><button type="button" class="btn pri sm" data-act="openPremium">Beli</button></div>'; }
+  const endedAt = T.start + (T.days || 7) * 864e5;
+  if (Date.now() - endedAt > 3 * 864e5 || g.trialEndHidden) return '';
+  return '<div class="card sec row" style="gap:12px;border-color:var(--amber)"><span style="font-size:26px">⭐</span><span class="grow small"><b>Uji coba Premium selesai</b><br><span class="muted">Datamu tetap aman. Lanjutkan: ' + esc(APP.priceLabel || '') + '</span></span><span style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><button type="button" class="btn pri sm" data-act="openPremium">Beli</button><button type="button" class="link tiny" data-act="hideTrialEnd">Tutup</button></span></div>';
+}
+
+/* ====================== BAGIKAN KE FINFLOW ======================
+   Dari aplikasi e-wallet/bank: Bagikan › FinFlow. Service worker menyimpan
+   teks/gambar yang dibagikan, lalu membuka aplikasi dengan ?aksi=bagikan. */
+function parseShared(text) {
+  const raw = String(text || '').replace(/\s+/g, ' ').trim(); const out = { amount: 0, note: '', type: 'expense' };
+  if (!raw) return out;
+  const re = /(?:rp\.?|idr)\s*([\d.,]*\d)/gi; let m; const c = [];
+  while ((m = re.exec(raw))) {
+    const v = parseAmountText(m[1]); if (!(v >= 100 && v < 1e9)) continue;
+    const before = raw.slice(Math.max(0, m.index - 26), m.index);
+    c.push({ v: v, key: /(total|jumlah|nominal|sebesar|senilai|amount)\W{0,12}$/i.test(before), bad: /(saldo|sisa|admin|biaya|fee|cashback|diskon|potongan|limit|poin)\W{0,14}$/i.test(before) });
+  }
+  const pick = c.find(x => x.key && !x.bad) || c.find(x => !x.bad) || c[0];
+  const q = parseQuick(raw);
+  if (pick) out.amount = pick.v; else if (raw.length <= 80 && q.amount) out.amount = q.amount;
+  const inc = /(menerima|diterima|uang masuk|dana masuk|transfer masuk|kamu dapat|received|refund|pengembalian dana)/i.test(raw) && !/(pembayaran|membayar|pembelian|transfer ke|kirim ke|dikirim ke)/i.test(raw);
+  out.type = inc ? 'income' : (pick ? 'expense' : q.type || 'expense');
+  if (q.categoryId) { const cat = live('categories', q.categoryId); if (cat && cat.type === out.type) out.categoryId = q.categoryId; }
+  if (q.walletId) out.walletId = q.walletId;
+  const dm = /(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/.exec(raw);
+  if (dm) { const d = dm[3] + '-' + pad2(Number(dm[2])) + '-' + pad2(Number(dm[1])); if (isYmd(d) && d <= today() && d >= addDays(today(), -60)) out.date = d; }
+  const mm = /(?:\bke(?:pada)?|\bdi|\bdari|\bto|\bfrom)\s+((?:[A-Z0-9][\w&'.\-]*\s?){1,5})/.exec(raw);
+  let note = mm ? mm[1].trim() : (pick ? raw.replace(/(?:rp\.?|idr)\s*[\d.,]*\d/gi, '').replace(/https?:\/\/\S+/g, '') : q.note || raw);
+  note = note.replace(/(?:rp\.?|idr)\s*[\d.,]*\d/gi, '').replace(/\s+/g, ' ').replace(/^[\s\-:.,]+|[\s\-:.,]+$/g, '').slice(0, 60);
+  out.note = note ? note.charAt(0).toUpperCase() + note.slice(1) : '';
+  return out;
+}
+async function takeShared() {
+  if (!('caches' in window)) return null;
+  try {
+    const c = await caches.open('finflow-share'); const mr = await c.match('./__share/meta'); if (!mr) return null;
+    const meta = await mr.json(); const fr = await c.match('./__share/file'); const file = fr ? await fr.blob() : null;
+    await c.delete('./__share/meta'); await c.delete('./__share/file');
+    if (Date.now() - (meta.at || 0) > 10 * 60000) return null;
+    return { meta: meta, file: file };
+  } catch (e) { return null; }
+}
+async function handleShared(given) {
+  const sh = given || await takeShared();
+  if (!sh) return toast('Tidak ada yang bisa dibaca. Coba bagikan lagi dari aplikasi asalnya.', 'warn', 4500);
+  const meta = sh.meta || {}; const text = [meta.title, meta.text, meta.url].filter(Boolean).join(' ');
+  const r = parseShared(text); const file = sh.file && /^image\//.test(sh.file.type || '') ? sh.file : null;
+  if (file && !r.amount) {
+    if (isPremium() && !APP.preview) return runScan(file);
+    openTxSheet({ type: 'expense', prefill: { note: r.note || 'Dari bukti pembayaran' } });
+    return toast('Isi nominalnya ya. Membaca gambar otomatis (scan) ada di Premium ⭐', 'warn', 5500);
+  }
+  const prefill = { note: r.note }; if (r.amount) prefill.amount = r.amount; if (r.categoryId) prefill.categoryId = r.categoryId; if (r.walletId) prefill.walletId = r.walletId; if (r.date) prefill.date = r.date;
+  if (file && isPremium()) { try { prefill.receipt = await compressImage(file); } catch (e) { /* lampiran dilewati */ } }
+  openTxSheet({ type: r.type, prefill: prefill });
+  toast(r.amount ? 'Terbaca ' + rp(r.amount) + '. Cek lagi lalu Simpan.' : 'Nominal belum terbaca. Isi manual ya.', r.amount ? 'success' : 'warn', 4500);
 }
 
 /* ====================== SINKRON GOOGLE SHEETS ====================== */
@@ -2949,12 +3159,13 @@ function openSettings() {
     '<div class="set-title">Tampilan</div><div class="set-group"><div class="set-row"><span class="e">🌗</span><span class="grow">Tema</span><select class="input" style="width:auto;min-height:38px;padding:6px 10px;font-size:16px" data-change="theme"><option value="auto"' + ((g.theme || 'auto') === 'auto' ? ' selected' : '') + '>Ikuti HP</option><option value="light"' + (g.theme === 'light' ? ' selected' : '') + '>Terang</option><option value="dark"' + (g.theme === 'dark' ? ' selected' : '') + '>Gelap</option></select></div>' +
     '<div class="set-row"><span class="e">📅</span><span class="grow">Tanggal mulai bulan<br><span class="tiny muted">mis. 25 jika gajian tiap tgl 25</span></span><select class="input" style="width:auto;min-height:38px;padding:6px 10px;font-size:16px" data-change="monthStart">' + Array.from({ length: 28 }, (_, i) => '<option value="' + (i + 1) + '"' + ((p.monthStartDay || 1) === i + 1 ? ' selected' : '') + '>' + (i + 1) + '</option>').join('') + '</select></div>' +
     accentRowHtml() +
+    '<label class="set-row"><span class="e">🌱</span><span class="grow">Tampilan sederhana<br><span class="tiny muted">sembunyikan fitur lanjutan dari Beranda</span></span><span class="switch"><input type="checkbox" data-change="simple"' + (p.simple ? ' checked' : '') + '><i></i></span></label>' +
     '<label class="set-row"><span class="e">🙈</span><span class="grow">Sembunyikan nominal</span><span class="switch"><input type="checkbox" data-change="hideMoney"' + (g.hideMoney ? ' checked' : '') + '><i></i></span></label></div>' +
     (demo ? '' : '<div class="set-title">Keamanan</div><div class="set-group"><label class="set-row"><span class="e">🔒</span><span class="grow">Minta PIN saat membuka aplikasi</span><span class="switch"><input type="checkbox" data-change="lockOnOpen"' + (u.lockOnOpen !== false && u.pinNumeric ? ' checked' : '') + (u.pinNumeric ? '' : ' disabled') + '><i></i></span></label>' + '<div id="bioRow"></div>' + row('🔑', 'Ganti PIN', 'changePin') + '</div>') +
     moreSettingsHtml(row) +
     '<div class="set-title">Data</div><div class="set-group">' + row('📤', 'Kirim backup ke Google Drive / WA', 'shareBackup') + row('💾', 'Backup data (.json)' + (S.db.meta.lastBackupAt ? '<br><span class="tiny muted">Terakhir ' + esc(fmtTime(S.db.meta.lastBackupAt)) + '</span>' : ''), 'doBackup') + row('♻️', 'Pulihkan dari backup', 'pickRestore') +
     row('📄', 'Laporan PDF' + premTag(), 'exportPdf') + row('📊', 'Ekspor Excel' + premTag(), 'exportXlsx') + row('🧾', 'Ekspor CSV', 'exportCsv') + (demo || APP.preview ? '' : row('☁️', 'Sinkron Google Sheets' + premTag() + '<br><span class="tiny muted">' + esc(serverLabel()) + '</span>', 'openServer')) + '</div>' +
-    '<div class="set-title">Lainnya</div><div class="set-group">' + row('🔄', 'Ganti akun / keluar', 'logout') + row('🧹', 'Hapus semua transaksi & data akun ini', 'wipeData') + (demo ? '' : row('🗑️', 'Hapus akun dari HP ini', 'wipeLocalUser', ' data-u="' + esc(u.username) + '"')) + '</div>' +
+    '<div class="set-title">Lainnya</div><div class="set-group">' + row('❓', 'Bantuan & tanya-jawab', 'openHelp') + row('💌', 'Ajak teman pakai FinFlow', 'inviteFriend') + row('🔄', 'Ganti akun / keluar', 'logout') + row('🧹', 'Hapus semua transaksi & data akun ini', 'wipeData') + (demo ? '' : row('🗑️', 'Hapus akun dari HP ini', 'wipeLocalUser', ' data-u="' + esc(u.username) + '"')) + '</div>' +
     (APP.privacyUrl && !APP.preview ? '<p class="center small mt16"><a href="' + esc(APP.privacyUrl) + '" target="_blank" rel="noopener">Kebijakan privasi & ketentuan</a></p>' : '') +
     '<p class="center tiny muted mt16">' + esc(APP.name) + ' v' + esc(APP.version) + (APP.contact ? ' · ' + esc(APP.contact) : '') + '<br>Data disimpan di perangkat ini' + (serverOn() ? ' & Google Sheets milikmu' : '') + '.</p>' });
   fillBioRow();
@@ -3138,6 +3349,10 @@ const ACT = {
   editWish: el => editWish(el.dataset.id), wishDecide: el => wishDecide(el.dataset.id, el.dataset.v),
   editChallenge: () => editChallenge(), shareChallenge: el => shareChallenge(el.dataset.id),
   delChallenge: async el => { if (!(await confirmBox('Hapus tantangan?', 'Tantangan ini akan dihapus dari daftar.', 'Hapus', true))) return; del('challenges', el.dataset.id); commit(); },
+  openMore: () => openMore(), simpleOff: () => { closeAllSheets(); setSimple(false); toast('Tampilan lengkap aktif. Semua fitur tampil di Beranda.', 'success', 3500); },
+  openHelp: () => openHelp(), openTourAgain: () => { closeAllSheets(); openTour(); }, inviteFriend: () => inviteFriend(),
+  startTrial: () => { if (!startTrial()) return toast('Uji coba gratis sudah pernah dipakai di HP ini.', 'warn'); closeAllSheets(); renderAll(); toast('🎁 Uji coba Premium aktif ' + APP.trialDays + ' hari. Selamat mencoba!', 'success', 4500); },
+  hideTrialOffer: () => { setGlobal({ trialOfferHidden: true }); renderAll(); }, hideTrialEnd: () => { setGlobal({ trialEndHidden: true }); renderAll(); },
   openReminder: () => openReminder(), openImport: () => openImport(), shareBackup: () => shareBackup(), openWage: () => openWage(), bioUnlock: () => bioUnlock()
 };
 const SUBMIT = { doLogin: doLogin, doRegister: doRegister, quickParse: quickParse, noop: () => {} };
@@ -3146,6 +3361,7 @@ const CHANGE = {
   histCat: el => { S.ui.hist.cat = el.value; S.ui.hist.limit = 120; $('#histList').innerHTML = histListHtml(); },
   histWallet: el => { S.ui.hist.wallet = el.value; S.ui.hist.limit = 120; $('#histList').innerHTML = histListHtml(); },
   theme: el => { setGlobal({ theme: el.value }); applyTheme(); },
+  simple: el => { setSimple(el.checked); toast(el.checked ? 'Tampilan sederhana aktif. Fitur lain ada di "Fitur lainnya".' : 'Tampilan lengkap aktif.', 'success', 3500); },
   hideMoney: el => { setGlobal({ hideMoney: el.checked }); applyTheme(); renderTop(); },
   monthStart: el => { put('prefs', { id: 'profile', monthStartDay: Number(el.value) || 1 }); commit(); toast('Bulan sekarang dimulai tanggal ' + el.value, 'success'); },
   accent: el => { if (!isPremium()) { el.value = 'indigo'; needPremium('Pilihan warna aplikasi adalah fitur Premium.'); return; } setGlobal({ accent: el.value }); applyAccent(); },
@@ -3201,13 +3417,16 @@ async function installApp() {
   toast('Buka menu ⋮ di Chrome, lalu pilih "Instal aplikasi" atau "Tambahkan ke layar utama".', 'warn', 5000);
 }
 function handleShortcut() {
-  if (S.shortcutDone) return; S.shortcutDone = true; let a = '';
-  try { a = new URLSearchParams(location.search).get('aksi') || ''; } catch (e) {}
+  if (S.shortcutDone) return; S.shortcutDone = true; let a = '', shared = null;
+  try { const sp = new URLSearchParams(location.search); a = sp.get('aksi') || '';
+    if (a === 'bagikan' && (sp.get('text') || sp.get('title') || sp.get('url'))) shared = { meta: { title: sp.get('title') || '', text: sp.get('text') || '', url: sp.get('url') || '', at: Date.now() }, file: null };
+  } catch (e) {}
   const map = { keluar: 'expense', masuk: 'income', transfer: 'transfer' };
   if (a) { try { history.replaceState(null, '', location.pathname); } catch (e) {} }
   if (map[a]) setTimeout(() => openTxSheet({ type: map[a] }), 150);
   else if (a === 'patungan') setTimeout(() => editSplit(), 150);
   else if (a === 'scan') setTimeout(() => scanReceipt(), 150);
+  else if (a === 'bagikan') setTimeout(() => handleShared(shared), 150);
 }
 
 /* ====================== MULAI ====================== */

@@ -1,6 +1,6 @@
 /* FinFlow service worker — membuat aplikasi bisa dibuka tanpa internet.
    Setiap kali index.html diperbarui, naikkan angka VERSION supaya HP pengguna mengambil versi baru. */
-const VERSION = '6.3.0';
+const VERSION = '6.4.0';
 const CACHE = 'finflow-app-' + VERSION;
 const LIB_CACHE = 'finflowlib-v1';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png'];
@@ -19,8 +19,23 @@ function withTimeout(p, ms) { return new Promise((res, rej) => { const t = setTi
 
 self.addEventListener('fetch', e => {
   const req = e.request;
-  if (req.method !== 'GET') return;
   const url = new URL(req.url);
+  // "Bagikan ke FinFlow": simpan teks/gambar yang dibagikan, lalu buka aplikasi
+  if (req.method === 'POST' && url.origin === self.location.origin && url.searchParams.get('aksi') === 'bagikan') {
+    e.respondWith((async () => {
+      try {
+        const fd = await req.formData(); const c = await caches.open('finflow-share');
+        const meta = { title: String(fd.get('title') || ''), text: String(fd.get('text') || ''), url: String(fd.get('url') || ''), at: Date.now() };
+        await c.put('./__share/meta', new Response(JSON.stringify(meta), { headers: { 'Content-Type': 'application/json' } }));
+        const f = fd.get('media');
+        if (f && typeof f !== 'string' && f.size) await c.put('./__share/file', new Response(f, { headers: { 'Content-Type': f.type || 'image/jpeg' } }));
+        else await c.delete('./__share/file');
+      } catch (err) { /* tetap buka aplikasi */ }
+      return Response.redirect('./?aksi=bagikan', 303);
+    })());
+    return;
+  }
+  if (req.method !== 'GET') return;
   // sinkron Google Sheets selalu lewat jaringan
   if (/(^|\.)script\.google\.com$|googleusercontent\.com$/.test(url.hostname)) return;
 
