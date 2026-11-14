@@ -5,32 +5,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kebijakan Privasi FinFlow</title>
 <meta name="description" content="Kebijakan privasi dan ketentuan Premium aplikasi FinFlow.">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="icon" href="icons/icon-192.png">
+<meta name="theme-color" content="#1A3358">
 <style>
-  :root{--bg:#F3F5FA;--card:#FFFFFF;--text:#0F172A;--muted:#5B6782;--line:#E2E8F0;--pri:#4338CA;--soft:#EEF2FF;color-scheme:light}
-  @media (prefers-color-scheme: dark){:root{--bg:#0A0F1E;--card:#131A2D;--text:#E8EBF7;--muted:#97A2C0;--line:#25304C;--pri:#A5B4FC;--soft:#1D2150;color-scheme:dark}}
+@font-face{font-family:'IBM Plex Sans';src:url('fonts/plex-400.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'IBM Plex Sans';src:url('fonts/plex-500.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'IBM Plex Sans';src:url('fonts/plex-600.woff2') format('woff2');font-weight:600;font-display:swap}
+:root{--bg:#F6F6F3;--card:#FFFFFF;--card2:#ECEDEA;--text:#151C27;--muted:#575F6B;--line:#DDE0DB;--line2:#C0C5BF;--pri:#1A3358;--pri-text:#1A3358;--pri-soft:#E2E8F1;--on-pri:#FFFFFF;--green:#1B7548;color-scheme:light}
+@media (prefers-color-scheme: dark){:root{--bg:#0F141B;--card:#171D26;--card2:#212834;--text:#E6E9EE;--muted:#A1A9B5;--line:#2A313C;--line2:#3B4451;--pri:#A9C0E3;--pri-text:#B4C8E8;--pri-soft:#22324B;--on-pri:#0F1A2B;--green:#78C597;color-scheme:dark}}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}
-  main{max-width:720px;margin:0 auto;padding:32px max(18px,env(safe-area-inset-left)) 60px}
-  h1{font-size:28px;line-height:1.2;margin:0 0 4px;text-wrap:balance}
-  h2{font-size:19px;margin:34px 0 8px;text-wrap:balance}
-  h3{font-size:16px;margin:20px 0 4px}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  main{max-width:720px;margin:0 auto;padding:32px max(20px,env(safe-area-inset-left)) 60px}
+  h1{font-size:30px;line-height:1.2;margin:0 0 6px;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+  h2{font-size:20px;line-height:1.3;margin:36px 0 8px;font-weight:600;text-wrap:balance}
+  h3{font-size:16px;margin:20px 0 4px;font-weight:600}
+  b{font-weight:600}
   p,li{max-width:66ch}
   ul{padding-left:20px}
-  li+li{margin-top:4px}
-  a{color:var(--pri)}
-  .meta{color:var(--muted);font-size:14px}
-  .box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:18px 0}
+  li+li{margin-top:6px}
+  a{color:var(--pri-text)}
+  .meta{color:var(--muted);font-size:14px;margin:0}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:20px 0}
   .box p{margin:0}
-  .fill{background:var(--soft);border-radius:6px;padding:0 5px;font-weight:600}
-  nav a{margin-right:14px;font-weight:600;font-size:14px}
-  footer{margin-top:40px;color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+  .fill{background:var(--pri-soft);border-radius:5px;padding:0 5px;font-weight:600}
+  nav{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:14px;padding-bottom:14px;border-bottom:3px double var(--line2)}
+  nav a{font-weight:500;font-size:14px}
+  footer{margin-top:40px;color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:16px;display:flex;gap:16px}
 </style>
 </head>
 <body>
 <main>
   <h1>Kebijakan Privasi FinFlow</h1>
-  <p class="meta">Berlaku sejak 10 November 2026 · Pengelola: Frmn</p>
+  <p class="meta">Diperbarui 14 November 2026. Pengelola: Frmn</p>
   <nav><a href="#privasi">Privasi</a><a href="#premium">Ketentuan Premium</a><a href="#kontak">Kontak</a></nav>
 
   <div class="box"><p><b>Ringkasnya:</b> catatan keuanganmu disimpan di HP kamu sendiri. Kami tidak memasang iklan, tidak melacak aktivitasmu, dan tidak menjual data. Data baru keluar dari HP jika kamu sendiri menyalakan sinkron Google Sheets atau mengaktifkan kode Premium.</p></div>
@@ -55,9 +61,9 @@
 
   <h2>4. Layanan pihak ketiga</h2>
   <ul>
-    <li><b>Google Fonts</b> untuk huruf, dan <b>cdnjs (Cloudflare)</b> untuk pustaka pembuat PDF/Excel, serta <b>jsDelivr</b> untuk pustaka pembaca struk, hanya saat fitur itu dipakai. Seperti saat membuka situs web biasa, penyedia ini dapat melihat alamat IP dan jenis browsermu.</li>
+    <li>Huruf, pustaka pembuat PDF dan Excel, serta pembaca struk disimpan langsung di aplikasi. Hanya jika file itu gagal dimuat, aplikasi mengambil salinan yang sama dari <b>jsDelivr</b>. Seperti saat membuka situs web biasa, penyedia ini dapat melihat alamat IP dan jenis browsermu.</li>
     <li><b>Google Apps Script / Google Sheets</b> bila sinkron atau lisensi dipakai.</li>
-    <li><b>WhatsApp</b> hanya terbuka bila kamu menekan tombol seperti "Ingatkan via WhatsApp", "Tagih patungan", atau "Lapor ortu". Pesannya kamu kirim sendiri.</li>
+    <li><b>WhatsApp</b> hanya terbuka bila kamu menekan tombol seperti "Ingatkan lewat WhatsApp", "Tagih patungan", atau "Lapor ortu". Pesannya kamu kirim sendiri.</li>
     <li><b>Google Calendar</b> hanya terbuka bila kamu memasang pengingat harian.</li>
     <li>Tempat hosting situs aplikasi (mis. GitHub Pages) dapat mencatat log akses standar.</li>
   </ul>
@@ -67,9 +73,10 @@
 
   <h2>6. Keamanan</h2>
   <p>PIN disimpan dalam bentuk hash dan bisa dipakai untuk mengunci aplikasi. PIN adalah kunci aplikasi, bukan enkripsi penuh, jadi jaga HP-mu dan gunakan PIN yang tidak mudah ditebak. Koneksi ke server sinkron dan lisensi memakai HTTPS.</p>
+  <p>File backup bisa dikunci dengan kata sandi (enkripsi AES-256-GCM). Kata sandi itu tidak disimpan di mana pun, jadi backup yang terkunci tidak bisa dibuka tanpa kata sandi tersebut, termasuk oleh pengelola.</p>
 
   <h2>7. Hak kamu</h2>
-  <p>Sesuai Undang-Undang No. 27 Tahun 2022 tentang Pelindungan Data Pribadi, kamu berhak mengakses, memperbaiki, dan menghapus data pribadimu, serta menarik persetujuan. Kamu bisa melakukannya sendiri di aplikasi: <i>Pengaturan › Backup</i> (mengunduh salinan), <i>Hapus semua data</i>, atau <i>Hapus akun dari HP ini</i>. Untuk data di server sinkron atau lisensi yang dikelola pengelola, hubungi kontak di bawah.</p>
+  <p>Sesuai Undang-Undang No. 27 Tahun 2022 tentang Pelindungan Data Pribadi, kamu berhak mengakses, memperbaiki, dan menghapus data pribadimu, serta menarik persetujuan. Kamu bisa melakukannya sendiri di aplikasi: <i>Pengaturan › Buat backup</i> (mengunduh salinan), <i>Hapus semua data</i>, atau <i>Hapus akun dari HP ini</i>. Untuk data di server sinkron atau lisensi yang dikelola pengelola, hubungi kontak di bawah.</p>
 
   <h2>8. Pengguna anak</h2>
   <p>FinFlow tidak ditujukan untuk anak di bawah 13 tahun dan tidak sengaja mengumpulkan data anak.</p>
@@ -89,8 +96,8 @@
   </ul>
 
   <h2 id="kontak">Kontak</h2>
-  <p>Frmn · WhatsApp: <a href="https://wa.me/6285648115397" target="_blank" rel="noopener">0856-4811-5397</a></p>
-  <footer>FinFlow · <a href="./">Buka aplikasi</a></footer>
+  <p>Pengelola: Frmn. WhatsApp: <a href="https://wa.me/6285648115397" target="_blank" rel="noopener">0856-4811-5397</a></p>
+  <footer><span>FinFlow</span><a href="./">Buka aplikasi</a></footer>
 </main>
 </body>
 </html>

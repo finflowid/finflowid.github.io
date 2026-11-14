@@ -3,189 +3,134 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FinFlow — Catatan Keuangan Anak Kos & Keluarga</title>
-<meta name="description" content="Catat pemasukan & pengeluaran, lihat jatah aman per hari, atur target tabungan dan utang-piutang. Bisa offline, data tetap di HP kamu.">
-<meta property="og:title" content="FinFlow — biar nggak boncos di akhir bulan">
+<title>FinFlow: catatan keuangan anak kos dan keluarga</title>
+<meta name="description" content="Catat pemasukan dan pengeluaran, lihat jatah aman per hari, atur target tabungan dan utang-piutang. Bisa offline, data tetap di HP kamu.">
+<meta property="og:title" content="FinFlow, biar nggak boncos di akhir bulan">
 <meta property="og:description" content="Aplikasi catatan keuangan yang bisa offline. Coba gratis.">
-<meta property="og:image" content="screenshots/beranda.png">
-<meta name="theme-color" content="#4F46E5">
+<meta property="og:image" content="https://finflowid.github.io/screenshots/beranda.png">
+<meta name="theme-color" content="#1A3358">
 <link rel="icon" href="icons/icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  /* Layout: satu kolom sempit di HP, dua kolom di hero & perbandingan saat layar lebar */
-  :root{--bg:#F3F5FA;--card:#FFFFFF;--text:#0F172A;--muted:#5B6782;--line:#E2E8F0;--pri:#4F46E5;--pri2:#7C3AED;--teal:#0D9488;--soft:#EEF2FF;--prit:#4338CA;--gold:#B45309;--goldsoft:#FFF7E6;
-        --font:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color-scheme:light}
-  @media (prefers-color-scheme: dark){:root{--bg:#0A0F1E;--card:#131A2D;--text:#E8EBF7;--muted:#97A2C0;--line:#25304C;--soft:#1D2150;--prit:#A5B4FC;--gold:#FBBF24;--goldsoft:#2E2410;color-scheme:dark}}
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 var(--font);-webkit-font-smoothing:antialiased}
-  a{color:inherit}
-  .wrap{max-width:1040px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right))}
-  header.top{display:flex;align-items:center;justify-content:space-between;padding-block:16px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;text-decoration:none}
-  .brand img{width:34px;height:34px;border-radius:10px}
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:14px;font-weight:800;text-decoration:none;border:1px solid var(--line);background:var(--card);font-size:15.5px}
-  .btn.pri{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border:0;box-shadow:0 10px 24px -10px rgba(79,70,229,.7)}
-  .btn:focus-visible,a:focus-visible{outline:3px solid var(--prit);outline-offset:3px}
-  .hero{display:grid;gap:28px;align-items:center;padding-block:24px 40px}
-  @media (min-width:860px){.hero{grid-template-columns:1.1fr .9fr}}
-  .eyebrow{display:inline-block;background:var(--soft);color:var(--prit);font-weight:700;font-size:13px;letter-spacing:.04em;padding:5px 12px;border-radius:99px}
-  h1{font-size:clamp(32px,6vw,52px);line-height:1.08;letter-spacing:-.03em;margin:14px 0 14px;text-wrap:balance}
-  h1 em{font-style:normal;background:linear-gradient(135deg,var(--pri),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .lead{font-size:18px;color:var(--muted);max-width:52ch;margin:0 0 22px}
-  .cta{display:flex;flex-wrap:wrap;gap:10px}
-  .note{font-size:13.5px;color:var(--muted);margin-top:12px}
-  .phone{justify-self:center;width:min(300px,78vw);aspect-ratio:780/1688;max-width:100%;border-radius:38px;padding:10px;background:#0F172A;box-shadow:0 30px 60px -25px rgba(15,23,42,.55)}
-  .phone img{display:block;width:100%;height:100%;object-fit:cover;border-radius:30px}
-  section{padding-block:36px}
-  h2{font-size:clamp(24px,4vw,32px);letter-spacing:-.02em;line-height:1.2;margin:0 0 8px;text-wrap:balance}
-  .sub{color:var(--muted);margin:0 0 22px;max-width:60ch}
-  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
-  .feat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
-  .feat .ic{font-size:26px}
-  .feat h3{margin:8px 0 4px;font-size:16.5px}
-  .feat p{margin:0;color:var(--muted);font-size:14.5px}
-  .shots{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
-  .shots figure{margin:0;flex:0 0 auto;width:220px}
-  .shots img{width:100%;border-radius:20px;border:1px solid var(--line);display:block}
-  .shots figcaption{font-size:13.5px;color:var(--muted);margin-top:6px}
-  .tbl-wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:18px}
-  table{border-collapse:collapse;width:100%;min-width:480px;font-size:15px}
-  th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line)}
-  th{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
-  td.c{text-align:center}
-  tr:last-child td{border-bottom:0}
-  .prem{color:var(--gold);font-weight:800}
-  .price{display:grid;gap:14px;margin-top:18px}
-  @media (min-width:700px){.price{grid-template-columns:1fr 1fr}}
-  .plan{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px}
-  .plan.best{border:2px solid var(--gold);background:linear-gradient(180deg,var(--goldsoft),var(--card) 60%)}
-  .plan .amt{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:4px 0 8px;font-variant-numeric:tabular-nums}
-  .plan ul{padding-left:20px;margin:0 0 18px;color:var(--muted)}
-  .plan .btn{width:100%}
-  .steps{counter-reset:s;display:grid;gap:12px;padding:0;list-style:none;margin:0}
-  .steps li{counter-increment:s;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px 14px 56px;position:relative}
-  .steps li:before{content:counter(s);position:absolute;left:16px;top:14px;width:28px;height:28px;border-radius:9px;background:var(--soft);color:var(--prit);font-weight:800;display:flex;align-items:center;justify-content:center}
-  details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
-  details+details{margin-top:10px}
-  summary{font-weight:700;cursor:pointer}
-  details p{margin:8px 0 0;color:var(--muted)}
-  .final{text-align:center;background:linear-gradient(135deg,#4F46E5,#7C3AED 55%,#0D9488);color:#fff;border-radius:26px;padding:34px 20px}
-  .final p{opacity:.9;margin:0 auto 18px;max-width:46ch}
-  .final .btn{background:#fff;color:#312E81;border:0}
-  footer{color:var(--muted);font-size:14px;padding-block:30px;display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between}
-  @media (prefers-reduced-motion:no-preference){.phone{animation:float 6s ease-in-out infinite}@keyframes float{50%{transform:translateY(-8px)}}}
+@font-face{font-family:'IBM Plex Sans';src:url('fonts/plex-400.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'IBM Plex Sans';src:url('fonts/plex-500.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'IBM Plex Sans';src:url('fonts/plex-600.woff2') format('woff2');font-weight:600;font-display:swap}
+:root{--bg:#F6F6F3;--card:#FFFFFF;--card2:#ECEDEA;--text:#151C27;--muted:#575F6B;--line:#DDE0DB;--line2:#C0C5BF;--pri:#1A3358;--pri-text:#1A3358;--pri-soft:#E2E8F1;--on-pri:#FFFFFF;--green:#1B7548;color-scheme:light}
+@media (prefers-color-scheme: dark){:root{--bg:#0F141B;--card:#171D26;--card2:#212834;--text:#E6E9EE;--muted:#A1A9B5;--line:#2A313C;--line2:#3B4451;--pri:#A9C0E3;--pri-text:#B4C8E8;--pri-soft:#22324B;--on-pri:#0F1A2B;--green:#78C597;color-scheme:dark}}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--pri-text)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+.ic{width:22px;height:22px;fill:currentColor;flex:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:18px;color:var(--text);text-decoration:none}
+.brand img{width:32px;height:32px;border-radius:8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:10px;border:1px solid var(--line2);background:var(--card);color:var(--text);font-weight:500;text-decoration:none;font-size:16px}
+.btn.pri{background:var(--pri);border-color:var(--pri);color:var(--on-pri)}
+.btn.sm{min-height:40px;padding:0 14px;font-size:14px}
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:48px;align-items:center;padding:40px 0 56px}
+h1{font-size:clamp(34px,6vw,52px);line-height:1.08;letter-spacing:-.02em;font-weight:600;margin:0;max-width:16ch}
+.rule{width:120px;border-top:3px double var(--text);margin:22px 0 0;opacity:.85}
+.lead{font-size:18px;line-height:1.6;color:var(--muted);margin:22px 0 0;max-width:52ch}
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.note{font-size:14px;color:var(--muted);margin-top:16px}
+.phone{justify-self:center;width:min(320px,80vw);border-radius:36px;border:10px solid #151C27;overflow:hidden;background:#151C27}
+.phone img{display:block;width:100%;height:auto}
+section{padding:56px 0;border-top:1px solid var(--line)}
+h2{font-size:clamp(24px,3.5vw,30px);line-height:1.2;letter-spacing:-.01em;font-weight:600;margin:0;max-width:30ch}
+.sub{color:var(--muted);margin:10px 0 0;max-width:60ch}
+.feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));column-gap:40px;margin-top:28px}
+.feat{display:flex;gap:14px;padding:18px 0;border-top:1px solid var(--line)}
+.feat .ic{width:24px;height:24px;color:var(--pri-text);margin-top:2px}
+.feat h3{font-size:17px;line-height:1.35;font-weight:600;margin:0}
+.feat p{margin:4px 0 0;color:var(--muted);font-size:15px;line-height:1.55}
+.shots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:28px}
+.shots figure{margin:0}.shots img{width:100%;height:auto;border-radius:14px;border:1px solid var(--line);display:block}
+.shots figcaption{font-size:14px;color:var(--muted);margin-top:8px}
+.tbl{position:relative;overflow-x:auto;margin-top:28px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{padding:12px 16px;text-align:left;border-top:1px solid var(--line)}
+thead th{border-top:0;font-weight:600;background:var(--card2)}
+td.c,th.c{text-align:center;width:22%}
+.yes{color:var(--green);vertical-align:-5px}.no{color:var(--muted)}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:16px;margin-top:24px}
+.plan{border:1px solid var(--line2);border-radius:12px;padding:24px;background:var(--card);display:flex;flex-direction:column}
+.plan.best{border:2px solid var(--pri)}
+.plan b{font-size:18px;font-weight:600}
+.plan .amt{font-size:34px;font-weight:600;letter-spacing:-.01em;margin:8px 0 4px;font-variant-numeric:tabular-nums}
+.plan ul{padding-left:20px;margin:12px 0 20px;color:var(--muted);flex:1}.plan li+li{margin-top:6px}
+.steps{margin:24px 0 0;padding-left:22px;max-width:64ch}.steps li{padding-left:6px}.steps li+li{margin-top:14px}
+details{border-bottom:1px solid var(--line);max-width:760px}details:first-of-type{border-top:1px solid var(--line);margin-top:24px}
+summary{padding:16px 0;font-weight:500;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px}
+summary::-webkit-details-marker{display:none}summary::after{content:'+';color:var(--muted);font-size:20px;line-height:1}details[open] summary::after{content:'\2212'}
+details p{margin:0 0 16px;color:var(--muted);max-width:64ch}
+.final{background:var(--pri);color:var(--on-pri);border-radius:16px;padding:40px 28px}
+.final h2{color:inherit}.final p{opacity:.85;margin:10px 0 24px}
+.final .btn{background:var(--on-pri);color:var(--pri);border-color:var(--on-pri)}
+footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px;padding:28px 0 40px;color:var(--muted);font-size:14px;border-top:1px solid var(--line)}
+footer nav{display:flex;flex-wrap:wrap;gap:8px 20px}
+:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+@media (max-width:760px){th,td{padding:11px 10px}td.c,th.c{width:88px}.hero{grid-template-columns:1fr;gap:36px;padding-top:24px}.shots{grid-template-columns:repeat(3,minmax(200px,1fr));overflow-x:auto}}
 </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="i-arrow-right" viewBox="0 0 256 256"><path d="M221.7,133.7l-72,72a8,8,0,0,1-11.3-11.3L196.7,136H40a8,8,0,0,1,0-16H196.7L138.3,61.7a8,8,0,0,1,11.3-11.3l72,72A8,8,0,0,1,221.7,133.7Z"></path></symbol><symbol id="i-arrows-clockwise" viewBox="0 0 256 256"><path d="M224,48V96a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h28.7L182.1,73.4a79.6,79.6,0,0,0-56.1-23.4h-0.5A79.5,79.5,0,0,0,69.6,72.7,8,8,0,0,1,58.4,61.3a96,96,0,0,1,135,0.8L208,76.7V48a8,8,0,0,1,16,0ZM186.4,183.3a80,80,0,0,1-112.5-0.7L59.3,168H88a8,8,0,0,0,0-16H40a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V179.3l14.6,14.6A95.4,95.4,0,0,0,130,222.1h0.5a95.4,95.4,0,0,0,67.1-27.3,8,8,0,0,0-11.2-11.4Z"></path></symbol><symbol id="i-bookmark-simple" viewBox="0 0 256 256"><path d="M184,32H72A16,16,0,0,0,56,48V224a8,8,0,0,0,12.2,6.8L128,193.4l59.8,37.4A8,8,0,0,0,200,224V48A16,16,0,0,0,184,32Zm0,177.6-51.8-32.4a8,8,0,0,0-8.5,0L72,209.6V48H184Z"></path></symbol><symbol id="i-calculator" viewBox="0 0 256 256"><path d="M80,120h96a8,8,0,0,0,8-8V64a8,8,0,0,0-8-8H80a8,8,0,0,0-8,8v48A8,8,0,0,0,80,120Zm8-48h80v32H88ZM200,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V40A16,16,0,0,0,200,24Zm0,192H56V40H200ZM100,148a12,12,0,1,1-12-12A12,12,0,0,1,100,148Zm40,0a12,12,0,1,1-12-12A12,12,0,0,1,140,148Zm40,0a12,12,0,1,1-12-12A12,12,0,0,1,180,148Zm-80,40a12,12,0,1,1-12-12A12,12,0,0,1,100,188Zm40,0a12,12,0,1,1-12-12A12,12,0,0,1,140,188Zm40,0a12,12,0,1,1-12-12A12,12,0,0,1,180,188Z"></path></symbol><symbol id="i-calendar-blank" viewBox="0 0 256 256"><path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Z"></path></symbol><symbol id="i-calendar-dots" viewBox="0 0 256 256"><path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Zm-68-76a12,12,0,1,1-12-12A12,12,0,0,1,140,132Zm44,0a12,12,0,1,1-12-12A12,12,0,0,1,184,132ZM96,172a12,12,0,1,1-12-12A12,12,0,0,1,96,172Zm44,0a12,12,0,1,1-12-12A12,12,0,0,1,140,172Zm44,0a12,12,0,1,1-12-12A12,12,0,0,1,184,172Z"></path></symbol><symbol id="i-chart-pie-slice" viewBox="0 0 256 256"><path d="M100,116.4a8,8,0,0,0,4-6.9v-72A8,8,0,0,0,93.3,30,104.1,104.1,0,0,0,25.7,147a8,8,0,0,0,4.5,5.8,7.9,7.9,0,0,0,3.4,0.7,8,8,0,0,0,4-1.1ZM88,49.6v55.3L40.1,132.5C40,131,40,129.5,40,128A88.1,88.1,0,0,1,88,49.6ZM128,24a8,8,0,0,0-8,8v91.8L41.2,169.7a8,8,0,0,0-2.9,11A104,104,0,1,0,128,24Zm0,192a88.5,88.5,0,0,1-71.5-36.7l75.5-44a8,8,0,0,0,4-6.9V40.4A88,88,0,0,1,128,216Z"></path></symbol><symbol id="i-check" viewBox="0 0 256 256"><path d="M229.7,77.7l-128,128a8,8,0,0,1-11.3,0l-56-56a8,8,0,0,1,11.3-11.3L96,188.7,218.3,66.3a8,8,0,0,1,11.3,11.3Z"></path></symbol><symbol id="i-credit-card" viewBox="0 0 256 256"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64Zm0,128H32V104H224v88Zm-16-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Zm-64,0a8,8,0,0,1-8,8H120a8,8,0,0,1,0-16h16A8,8,0,0,1,144,168Z"></path></symbol><symbol id="i-download-simple" viewBox="0 0 256 256"><path d="M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0Zm-101.7,5.7a8,8,0,0,0,11.3,0l40-40a8,8,0,0,0-11.3-11.3L136,124.7V32a8,8,0,0,0-16,0v92.7L93.7,98.3a8,8,0,0,0-11.3,11.3Z"></path></symbol><symbol id="i-handshake" viewBox="0 0 256 256"><path d="M254.3,107.9,228.8,56.9a16,16,0,0,0-21.5-7.2L182.4,62.1,130.1,48.3a8.1,8.1,0,0,0-4.1,0L73.6,62.1,48.7,49.7a16,16,0,0,0-21.5,7.2L1.7,107.9a16,16,0,0,0,7.2,21.5l27,13.5,55.5,39.6a8.1,8.1,0,0,0,2.7,1.2l64,16a8,8,0,0,0,7.6-2.1l55.1-55.1,26.4-13.2a16,16,0,0,0,7.2-21.5Zm-54.9,33.4L165,113.7a8,8,0,0,0-10.7,0.6C136.5,132.3,116.7,130,104,122L147.2,80h31.8l27.2,54.4ZM41.5,64,62,74.2,36.4,125.3,16,115.1Zm116,119.1L99.4,168.6l-49.2-35.1,28-56L128,64.3l9.8,2.6-45,43.7-0.1,0.1a16,16,0,0,0,2.7,24.8c20.6,13.1,45.4,11,64.9-5L188,152.7Zm62-57.9-25.5-51L214.5,64,240,115.1Zm-87.8,92.7a8,8,0,0,1-7.8,6.1,8.1,8.1,0,0,1-1.9-0.2L80.4,213.3a7.9,7.9,0,0,1-2.7-1.2L51.4,193.3a8,8,0,0,1,9.3-13l25.1,17.9L126,208.2A8,8,0,0,1,131.8,217.9Z"></path></symbol><symbol id="i-lightning" viewBox="0 0 256 256"><path d="M215.8,118.2a8,8,0,0,0-5-5.7L153.2,90.9l14.7-73.3a8,8,0,0,0-13.7-7l-112,120a8,8,0,0,0,3,13l57.6,21.6L88.2,238.4a8,8,0,0,0,13.7,7l112-120A8,8,0,0,0,215.8,118.2ZM109.4,214l10.5-52.4a8,8,0,0,0-5-9.1L62,132.7l84.6-90.7L136.2,94.4a8,8,0,0,0,5,9.1l52.8,19.8Z"></path></symbol><symbol id="i-lock-key" viewBox="0 0 256 256"><path d="M128,112a28,28,0,0,0-8,54.8V184a8,8,0,0,0,16,0V166.8A28,28,0,0,0,128,112Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,128,152Zm80-72H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Z"></path></symbol><symbol id="i-share-network" viewBox="0 0 256 256"><path d="M176,160a39.9,39.9,0,0,0-28.6,12.1l-46.1-29.6a39.8,39.8,0,0,0,0-28.9l46.1-29.6a40,40,0,1,0-8.7-13.4l-46.1,29.6a40,40,0,1,0,0,55.8l46.1,29.6A40,40,0,1,0,176,160Zm0-128a24,24,0,1,1-24,24A24,24,0,0,1,176,32ZM64,152a24,24,0,1,1,24-24A24,24,0,0,1,64,152Zm112,72a24,24,0,1,1,24-24A24,24,0,0,1,176,224Z"></path></symbol><symbol id="i-trend-up" viewBox="0 0 256 256"><path d="M240,56v64a8,8,0,0,1-16,0V75.3l-82.3,82.3a8,8,0,0,1-11.3,0L96,123.3,29.7,189.7a8,8,0,0,1-11.3-11.3l72-72a8,8,0,0,1,11.3,0L136,140.7,212.7,64H168a8,8,0,0,1,0-16h64A8,8,0,0,1,240,56Z"></path></symbol><symbol id="i-trophy" viewBox="0 0 256 256"><path d="M232,64H208V48a8,8,0,0,0-8-8H56a8,8,0,0,0-8,8V64H24A16,16,0,0,0,8,80V96a40,40,0,0,0,40,40h3.6A80.1,80.1,0,0,0,120,191.6V216H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V191.6c31.9-3.2,58.4-25.6,68.1-55.6H208a40,40,0,0,0,40-40V80A16,16,0,0,0,232,64ZM48,120A24,24,0,0,1,24,96V80H48v32q0,4,0.4,8Zm144-8.9c0,35.5-29,64.6-64,64.9a64,64,0,0,1-64-64V56H192ZM232,96a24,24,0,0,1-24,24h-0.5a81.8,81.8,0,0,0,0.5-8.9V80h24Z"></path></symbol><symbol id="i-users-three" viewBox="0 0 256 256"><path d="M244.8,150.4a8,8,0,0,1-11.2-1.6A51.6,51.6,0,0,0,192,128a8,8,0,0,1-7.4-4.9,8,8,0,0,1,0-6.2A8,8,0,0,1,192,112a24,24,0,1,0-23.2-30,8,8,0,1,1-15.5-4A40,40,0,1,1,219,117.5a67.9,67.9,0,0,1,27.4,21.7A8,8,0,0,1,244.8,150.4ZM190.9,212a8,8,0,1,1-13.8,8,57,57,0,0,0-98.2,0,8,8,0,1,1-13.8-8,72.1,72.1,0,0,1,33.7-29.9,48,48,0,1,1,58.4,0A72.1,72.1,0,0,1,190.9,212ZM128,176a32,32,0,1,0-32-32A32,32,0,0,0,128,176ZM72,120a8,8,0,0,0-8-8A24,24,0,1,1,87.2,82a8,8,0,1,0,15.5-4A40,40,0,1,0,37,117.5,67.9,67.9,0,0,0,9.6,139.2a8,8,0,1,0,12.8,9.6A51.6,51.6,0,0,1,64,128,8,8,0,0,0,72,120Z"></path></symbol><symbol id="i-wallet" viewBox="0 0 256 256"><path d="M216,64H56a8,8,0,0,1,0-16H192a8,8,0,0,0,0-16H56A24,24,0,0,0,32,56V184a24,24,0,0,0,24,24H216a16,16,0,0,0,16-16V80A16,16,0,0,0,216,64Zm0,128H56a8,8,0,0,1-8-8V78.6A23.8,23.8,0,0,0,56,80H216Zm-48-60a12,12,0,1,1,12,12A12,12,0,0,1,168,132Z"></path></symbol></defs></svg>
 <div class="wrap">
-  <header class="top">
-    <a class="brand" href="./"><img src="icons/icon-192.png" alt="">FinFlow</a>
-    <a class="btn" href="./">Buka aplikasi</a>
-  </header>
-
-  <div class="hero">
-    <div>
-      <span class="eyebrow">Untuk mahasiswa, anak kos & keluarga</span>
-      <h1>Uang bulanan cukup <em>sampai akhir bulan</em>.</h1>
-      <p class="lead">FinFlow menghitung jatah aman per hari dari budget-mu, mencatat semua dompet (tunai, bank, GoPay, Dana), dan mengingatkan tagihan & utang. Bisa dipakai tanpa internet.</p>
-      <div class="cta"><a class="btn pri" href="./">Coba gratis sekarang</a><a class="btn" id="buyTop" href="#harga">Lihat Premium</a></div>
-      <p class="note">Tanpa iklan · Data tetap di HP kamu · Pasang di Android & iPhone tanpa Play Store</p>
-    </div>
-    <div class="phone"><img src="screenshots/beranda.png" alt="Tampilan beranda FinFlow: total saldo, dompet, dan jatah aman per hari"></div>
+<header class="top"><a class="brand" href="./"><img src="icons/icon-192.png" alt="">FinFlow</a><a class="btn sm" href="./">Buka aplikasi</a></header>
+<div class="hero">
+  <div>
+    <h1>Uang bulanan cukup sampai akhir bulan.</h1>
+    <div class="rule" aria-hidden="true"></div>
+    <p class="lead">FinFlow menghitung jatah aman per hari dari budget-mu, mencatat semua dompet (tunai, bank, GoPay, Dana), dan mengingatkan tagihan serta utang. Bisa dipakai tanpa internet.</p>
+    <div class="cta"><a class="btn pri" href="./">Coba gratis</a><a class="btn" href="#harga">Lihat Premium</a></div>
+    <p class="note">Tanpa iklan. Data tetap di HP kamu. Bisa dipasang di Android dan iPhone tanpa Play Store.</p>
   </div>
-
-  <section>
-    <h2>Yang bikin FinFlow beda</h2>
-    <p class="sub">Dibuat untuk kebiasaan keuangan sehari-hari di Indonesia.</p>
-    <div class="grid">
-      <div class="feat"><div class="ic">💡</div><h3>Jatah aman per hari</h3><p>Atur budget bulanan, FinFlow menghitung berapa yang aman dipakai hari ini supaya tidak boncos.</p></div>
-      <div class="feat"><div class="ic">⚡</div><h3>Catat dalam 3 detik</h3><p>Ketik "kemarin kopi 18k gopay" — nominal, kategori, dompet, dan tanggal langsung terisi.</p></div>
-      <div class="feat"><div class="ic">📲</div><h3>Bagikan ke FinFlow</h3><p>Habis bayar di e-wallet atau m-banking? Tekan Bagikan, pilih FinFlow, nominalnya terisi sendiri (Android).</p></div>
-      <div class="feat"><div class="ic">🌱</div><h3>Ramah pemula</h3><p>Ada tur singkat dan tampilan sederhana. Fitur lanjutan baru muncul saat kamu siap.</p></div>
-      <div class="feat"><div class="ic">👛</div><h3>Semua dompet</h3><p>Tunai, rekening, e-wallet, celengan. Pindah saldo lengkap dengan biaya admin.</p></div>
-      <div class="feat"><div class="ic">🤝</div><h3>Utang-piutang</h3><p>Catat cicilan, lihat yang telat bayar, dan ingatkan teman lewat WhatsApp sekali ketuk.</p></div>
-      <div class="feat"><div class="ic">🔁</div><h3>Tagihan rutin otomatis</h3><p>Kos, kuota, langganan, gaji — tercatat sendiri saat jatuh tempo.</p></div>
-      <div class="feat"><div class="ic">📅</div><h3>Bulan mengikuti gajian</h3><p>Gajian tanggal 25? Atur awal bulan sesuai tanggal gajianmu.</p></div>
-      <div class="feat"><div class="ic">🔒</div><h3>Privat & bisa offline</h3><p>Dikunci PIN, data di HP sendiri, tetap jalan tanpa sinyal.</p></div>
-      <div class="feat"><div class="ic">📊</div><h3>Statistik & insight</h3><p>Diagram per kategori, kalender boros-hemat, dan peringatan kalau belanja tidak biasa.</p></div>
-      <div class="feat"><div class="ic">🍽️</div><h3>Patungan</h3><p>Makan bareng atau bayar kos berempat? Bagi rata, catat siapa sudah bayar, tagih lewat WA.</p></div>
-      <div class="feat"><div class="ic">🔮</div><h3>Prediksi akhir bulan</h3><p>"Dengan pola sekarang, uangmu habis tanggal 24." Tahu lebih awal, sempat mengerem.</p></div>
-      <div class="feat"><div class="ic">💳</div><h3>Paylater & langganan</h3><p>Cicilan Shopee PayLater, Kredivo, Netflix, Spotify — kelihatan semua, lengkap pengingatnya.</p></div>
-      <div class="feat"><div class="ic">🛍️</div><h3>Wishlist anti-impulsif</h3><p>Masukkan barang incaran, putuskan 3 hari lagi. Lihat juga harganya dalam jam kerja.</p></div>
-      <div class="feat"><div class="ic">🏆</div><h3>Tantangan hemat</h3><p>7 hari tanpa jajan, nabung 5rb sehari. Dapat lencana dan bisa dibagikan ke story.</p></div>
-      <div class="feat"><div class="ic">🎁</div><h3>Rekap & lapor ortu</h3><p>Rekap bulanan ala "wrapped" untuk story, dan laporan rapi untuk orang tua lewat WA.</p></div>
-    </div>
-  </section>
-
-  <section>
-    <h2>Lihat tampilannya</h2>
-    <div class="shots">
-      <figure><img src="screenshots/beranda.png" alt="Beranda" loading="lazy"><figcaption>Beranda & jatah harian</figcaption></figure>
-      <figure><img src="screenshots/statistik.png" alt="Statistik" loading="lazy"><figcaption>Statistik per kategori</figcaption></figure>
-      <figure><img src="screenshots/rencana.png" alt="Target tabungan" loading="lazy"><figcaption>Target tabungan</figcaption></figure>
-    </div>
-  </section>
-
-  <section id="harga">
-    <h2>Gratis untuk mulai, Premium kalau butuh lebih</h2>
-    <p class="sub">Versi gratis sudah cukup untuk mencatat sehari-hari. Premium membuka semua batas, sekali bayar.</p>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>Fitur</th><th class="c">Gratis</th><th class="c prem">Premium</th></tr></thead>
-      <tbody>
-        <tr><td>Catat pemasukan & pengeluaran</td><td class="c">Tanpa batas</td><td class="c">Tanpa batas</td></tr>
-        <tr><td>Dompet</td><td class="c">3</td><td class="c">Tanpa batas</td></tr>
-        <tr><td>Budget per kategori (+ budget total)</td><td class="c">2</td><td class="c">Tanpa batas</td></tr>
-        <tr><td>Target tabungan</td><td class="c">1</td><td class="c">Tanpa batas</td></tr>
-        <tr><td>Transaksi rutin</td><td class="c">2</td><td class="c">Tanpa batas</td></tr>
-        <tr><td>Utang-piutang & pengingat WhatsApp</td><td class="c">✓</td><td class="c">✓</td></tr>
-        <tr><td>Statistik, insight, backup, ekspor CSV</td><td class="c">✓</td><td class="c">✓</td></tr>
-        <tr><td>Patungan, cicilan/paylater, langganan</td><td class="c">✓</td><td class="c">✓</td></tr>
-        <tr><td>Prediksi akhir bulan, kalender, rekap, lapor ortu</td><td class="c">✓</td><td class="c">✓</td></tr>
-        <tr><td>Wishlist & tantangan hemat</td><td class="c">3 & 1</td><td class="c">Tanpa batas</td></tr>
-        <tr><td>Laporan PDF & Excel</td><td class="c">—</td><td class="c">✓</td></tr>
-        <tr><td>Scan struk otomatis</td><td class="c">—</td><td class="c">✓</td></tr>
-        <tr><td>Impor mutasi bank (CSV)</td><td class="c">—</td><td class="c">✓</td></tr>
-        <tr><td>Laporan usaha & warna aplikasi</td><td class="c">—</td><td class="c">✓</td></tr>
-        <tr><td>Foto struk / nota</td><td class="c">—</td><td class="c">✓</td></tr>
-        <tr><td>Sinkron Google Sheets antar-HP</td><td class="c">—</td><td class="c">✓</td></tr>
-      </tbody>
-    </table></div>
-    <div class="price">
-      <div class="plan"><b>Gratis</b><div class="amt">Rp 0</div><ul><li>Semua fitur inti</li><li>Tanpa iklan</li><li>Bisa dipakai selamanya</li></ul><a class="btn block" href="./">Mulai gratis</a></div>
-      <div class="plan best"><b class="prem">⭐ Premium</b><div class="amt" id="price">Rp 13.000</div><ul><li>Sekali bayar, tanpa langganan</li><li>1 kode untuk <span id="maxhp">2</span> HP</li><li>Semua batas dibuka</li><li>Bisa coba gratis 7 hari di aplikasi</li></ul><a class="btn pri" id="buyBtn" href="#">Beli Premium</a></div>
-    </div>
-  </section>
-
-  <section>
-    <h2>Cara pasang di HP</h2>
-    <ol class="steps">
-      <li><b>Buka aplikasinya</b> lewat tombol "Coba gratis" di halaman ini.</li>
-      <li><b>Android:</b> tekan tombol hijau "📲 Pasang FinFlow di HP". <b>iPhone:</b> Safari › Bagikan › Tambah ke Layar Utama.</li>
-      <li><b>Daftar dengan PIN</b>, isi saldo awal tiap dompet, lalu mulai mencatat. Untuk Premium: Pengaturan › Upgrade ke Premium › masukkan kode.</li>
-    </ol>
-  </section>
-
-  <section>
-    <h2>Pertanyaan yang sering ditanya</h2>
-    <details><summary>Apakah data saya aman?</summary><p>Catatan keuangan tersimpan di HP kamu, dikunci PIN, tanpa iklan dan pelacak. Data baru keluar dari HP jika kamu menyalakan sinkron Google Sheets sendiri.</p></details>
-    <details><summary>Bisa dipakai tanpa internet?</summary><p>Bisa. Setelah dibuka sekali, aplikasi tetap jalan offline. Internet hanya perlu untuk aktivasi Premium (sekali), sinkron, dan membuat PDF/Excel pertama kali.</p></details>
-    <details><summary>Kalau ganti HP, datanya hilang?</summary><p>Tidak, asal kamu pakai Backup (file .json) lalu Pulihkan di HP baru, atau pakai sinkron Google Sheets (Premium).</p></details>
-    <details><summary>Bisa coba Premium dulu sebelum beli?</summary><p>Bisa. Di aplikasi buka Pengaturan › Upgrade ke Premium › Coba gratis 7 hari. Tanpa kode dan tanpa bayar, satu kali per HP. Setelah selesai, catatanmu tetap aman.</p></details>
-    <details><summary>Premium berlangganan?</summary><p>Tidak. Sekali bayar. Pindah HP? Lepas kode dari HP lama di Pengaturan › Premium, lalu aktifkan di HP baru.</p></details>
-    <details><summary>Ada di Play Store?</summary><p id="faqPlay">Saat ini dipasang langsung dari browser (lebih ringan, tanpa iklan). Versi Play Store sedang disiapkan.</p></details>
-  </section>
-
-  <section>
-    <div class="final"><h2>Mulai atur uangmu hari ini</h2><p>Gratis, tanpa daftar email. Cukup username dan PIN.</p><a class="btn" href="./">Coba FinFlow gratis</a></div>
-  </section>
-
-  <footer><span>© <span id="yr">2026</span> FinFlow · <span id="seller">Frmn</span></span><span><a href="kebijakan-privasi.html">Kebijakan privasi</a> · <a href="kebijakan-privasi.html#premium">Ketentuan Premium</a> · <a id="waLink" href="#">Kontak</a></span></footer>
+  <div class="phone"><img src="screenshots/beranda.png" alt="Tampilan Beranda FinFlow: total saldo, ringkasan bulan ini, dan dompet"></div>
+</div>
+<section>
+  <h2>Yang bikin FinFlow beda</h2>
+  <p class="sub">Dibuat untuk kebiasaan keuangan sehari-hari di Indonesia.</p>
+  <div class="feats"><div class="feat"><svg class="ic" aria-hidden="true"><use href="#i-calculator"></use></svg><div><h3>Jatah aman per hari</h3><p>Atur budget bulanan, lalu FinFlow menghitung berapa yang aman dipakai hari ini supaya tidak boncos.</p></div></div><div class="feat"><svg class="ic" aria-hidden="true"><use href="#i-lightning"></use></svg><div><h3>Catat dalam hitungan detik</h3><p>Ketik "kemarin kopi 18k gopay", lalu nominal, kategori, dompet, dan tanggal langsung terisi.</p></div></div><div class="feat"><svg class="ic" aria-hidden="true"><use href="#i-share-network"></use></svg><div><h3>Bagikan ke FinFlow</h3><p>Habis bayar di e-wallet atau m-banking? Ketuk Bagikan, pilih FinFlow, dan nominalnya terisi sendiri (Android).</p></div></div><div class="feat"><svg class="ic" aria-hidden="true"><use href="#i-wallet"></use></svg><div><h3>Semua dompet</h3><p>Tunai, rekening, e-wallet, dan celengan. Pindah saldo lengkap dengan biaya admin.</p></div></div><div class="feat"><svg class="ic" aria-hidden="true"><use href="#i-handshake"></use></svg><div><h3>Utang dan piutang</h3><p>Catat cicilan, lihat yang telat bayar, dan ingatkan teman lewat WhatsApp sekali ketuk.</p></div></div><div class="feat"><svg class="ic" aria-hidden="true"><use href="#i-arrows-clockwise"></use></svg><div><h3>Tagihan rutin otomatis</h3><p>Kos, kuota, langganan, dan gaji tercatat sendiri saat jatuh tempo.</p></div></div><div class="feat"><svg class="ic" aria-hidden="true"><use href="#i-calendar-blank"></use></svg><div><h3>Bulan mengikuti gajian</h3><p>Gajian tanggal 25? Atur awal bulan sesuai tanggal gajianmu.</p></div></div><div class="feat"><svg class="ic" aria-hidden="true"><use href="#i-lock-key"></use></svg><div><h3>Privat dan bisa offline</h3><p>Dikunci PIN atau sidik jari, data di HP sendiri, tetap jalan tanpa sinyal.</p></div></div><div class="feat"><svg class="ic" aria-hidden="true"><use href="#i-chart-pie-slice"></use></svg><div><h3>Statistik dan insight</h3><p>Diagram per kategori, kalender pengeluaran, dan peringatan kalau belanja tidak biasa.</p></div></div><div class="feat"><svg class="ic" aria-hidden="true"><use href="#i-users-three"></use></svg><div><h3>Patungan</h3><p>Makan bareng atau bayar kos berempat? Bagi rata, catat siapa yang sudah bayar, lalu tagih lewat WA.</p></div></div><div class="feat"><svg class="ic" aria-hidden="true"><use href="#i-trend-up"></use></svg><div><h3>Perkiraan akhir bulan</h3><p>Tahu lebih awal kalau uangmu bisa habis sebelum gajian, jadi masih sempat mengerem.</p></div></div><div class="feat"><svg class="ic" aria-hidden="true"><use href="#i-credit-card"></use></svg><div><h3>Paylater dan langganan</h3><p>Cicilan Shopee PayLater, Kredivo, Netflix, dan Spotify kelihatan semua, lengkap dengan pengingatnya.</p></div></div><div class="feat"><svg class="ic" aria-hidden="true"><use href="#i-bookmark-simple"></use></svg><div><h3>Wishlist anti-impulsif</h3><p>Masukkan barang incaran, putuskan 3 hari lagi. Lihat juga harganya dalam jam kerja.</p></div></div><div class="feat"><svg class="ic" aria-hidden="true"><use href="#i-trophy"></use></svg><div><h3>Tantangan hemat</h3><p>7 hari tanpa jajan atau nabung 5rb sehari. Dapat lencana dan bisa dibagikan ke story.</p></div></div><div class="feat"><svg class="ic" aria-hidden="true"><use href="#i-calendar-dots"></use></svg><div><h3>Rekap dan lapor ortu</h3><p>Rekap bulanan untuk story, dan laporan rapi untuk orang tua lewat WA.</p></div></div></div>
+</section>
+<section>
+  <h2>Lihat tampilannya</h2>
+  <div class="shots">
+    <figure><img src="screenshots/beranda.png" alt="Beranda" loading="lazy"><figcaption>Saldo dan dompet</figcaption></figure>
+    <figure><img src="screenshots/statistik.png" alt="Statistik" loading="lazy"><figcaption>Statistik per kategori</figcaption></figure>
+    <figure><img src="screenshots/rencana.png" alt="Target tabungan" loading="lazy"><figcaption>Target tabungan</figcaption></figure>
+  </div>
+</section>
+<section id="harga">
+  <h2>Gratis untuk mulai, Premium kalau butuh lebih</h2>
+  <p class="sub">Versi gratis sudah cukup untuk mencatat sehari-hari. Premium membuka semua batas dengan sekali bayar.</p>
+  <div class="tbl"><table><thead><tr><th>Fitur</th><th class="c">Gratis</th><th class="c">Premium</th></tr></thead><tbody><tr><td>Catat pemasukan dan pengeluaran</td><td class="c">Tanpa batas</td><td class="c">Tanpa batas</td></tr><tr><td>Dompet</td><td class="c">3</td><td class="c">Tanpa batas</td></tr><tr><td>Budget per kategori (selain budget total)</td><td class="c">2</td><td class="c">Tanpa batas</td></tr><tr><td>Target tabungan</td><td class="c">1</td><td class="c">Tanpa batas</td></tr><tr><td>Transaksi rutin</td><td class="c">2</td><td class="c">Tanpa batas</td></tr><tr><td>Utang-piutang dan pengingat WhatsApp</td><td class="c"><svg class="ic yes" aria-hidden="true"><use href="#i-check"></use></svg><span class="sr">Ada</span></td><td class="c"><svg class="ic yes" aria-hidden="true"><use href="#i-check"></use></svg><span class="sr">Ada</span></td></tr><tr><td>Statistik, insight, backup, ekspor CSV</td><td class="c"><svg class="ic yes" aria-hidden="true"><use href="#i-check"></use></svg><span class="sr">Ada</span></td><td class="c"><svg class="ic yes" aria-hidden="true"><use href="#i-check"></use></svg><span class="sr">Ada</span></td></tr><tr><td>Patungan, cicilan, paylater, langganan</td><td class="c"><svg class="ic yes" aria-hidden="true"><use href="#i-check"></use></svg><span class="sr">Ada</span></td><td class="c"><svg class="ic yes" aria-hidden="true"><use href="#i-check"></use></svg><span class="sr">Ada</span></td></tr><tr><td>Perkiraan akhir bulan, kalender, rekap, lapor ortu</td><td class="c"><svg class="ic yes" aria-hidden="true"><use href="#i-check"></use></svg><span class="sr">Ada</span></td><td class="c"><svg class="ic yes" aria-hidden="true"><use href="#i-check"></use></svg><span class="sr">Ada</span></td></tr><tr><td>Wishlist dan tantangan hemat</td><td class="c">3 dan 1</td><td class="c">Tanpa batas</td></tr><tr><td>Laporan PDF dan Excel</td><td class="c"><span class="no">Tidak</span></td><td class="c"><svg class="ic yes" aria-hidden="true"><use href="#i-check"></use></svg><span class="sr">Ada</span></td></tr><tr><td>Scan struk otomatis</td><td class="c"><span class="no">Tidak</span></td><td class="c"><svg class="ic yes" aria-hidden="true"><use href="#i-check"></use></svg><span class="sr">Ada</span></td></tr><tr><td>Impor mutasi bank (CSV)</td><td class="c"><span class="no">Tidak</span></td><td class="c"><svg class="ic yes" aria-hidden="true"><use href="#i-check"></use></svg><span class="sr">Ada</span></td></tr><tr><td>Laporan usaha dan warna aplikasi</td><td class="c"><span class="no">Tidak</span></td><td class="c"><svg class="ic yes" aria-hidden="true"><use href="#i-check"></use></svg><span class="sr">Ada</span></td></tr><tr><td>Foto struk atau nota</td><td class="c"><span class="no">Tidak</span></td><td class="c"><svg class="ic yes" aria-hidden="true"><use href="#i-check"></use></svg><span class="sr">Ada</span></td></tr><tr><td>Sinkron Google Sheets antar-HP</td><td class="c"><span class="no">Tidak</span></td><td class="c"><svg class="ic yes" aria-hidden="true"><use href="#i-check"></use></svg><span class="sr">Ada</span></td></tr></tbody></table></div>
+  <div class="plans">
+    <div class="plan"><b>Gratis</b><div class="amt">Rp0</div><ul><li>Semua fitur inti</li><li>Tanpa iklan</li><li>Bisa dipakai selamanya</li></ul><a class="btn" href="./">Mulai gratis</a></div>
+    <div class="plan best"><b>Premium</b><div class="amt" id="price">Rp13.000</div><ul><li>Sekali bayar, tanpa langganan</li><li>Satu kode untuk <span id="maxhp">2</span> HP</li><li>Semua batas dibuka</li><li>Bisa coba gratis 7 hari di aplikasi</li></ul><a class="btn pri" id="buyBtn" href="#">Beli Premium</a></div>
+  </div>
+</section>
+<section>
+  <h2>Cara pasang di HP</h2>
+  <ol class="steps">
+    <li><b>Buka aplikasinya</b> lewat tombol Coba gratis di halaman ini.</li>
+    <li><b>Android:</b> ketuk tombol Pasang FinFlow sebagai aplikasi. <b>iPhone:</b> Safari › Bagikan › Tambah ke Layar Utama.</li>
+    <li><b>Daftar dengan PIN</b>, isi saldo awal tiap dompet, lalu mulai mencatat. Untuk Premium: Pengaturan › Upgrade ke Premium, lalu masukkan kode.</li>
+  </ol>
+</section>
+<section>
+  <h2>Pertanyaan yang sering ditanya</h2>
+  <details><summary>Apakah data saya aman?</summary><p>Catatan keuangan tersimpan di HP kamu, dikunci PIN atau sidik jari, tanpa iklan dan pelacak. Data baru keluar dari HP jika kamu menyalakan sinkron Google Sheets sendiri. File backup juga bisa dikunci dengan kata sandi.</p></details><details><summary>Bisa dipakai tanpa internet?</summary><p>Bisa. Setelah dibuka sekali, aplikasi tetap jalan offline. Internet hanya perlu untuk aktivasi Premium (sekali) dan sinkron.</p></details><details><summary>Kalau ganti HP, datanya hilang?</summary><p>Tidak, asal kamu membuat backup lalu memulihkannya di HP baru, atau memakai sinkron Google Sheets (Premium).</p></details><details><summary>Bisa coba Premium dulu sebelum beli?</summary><p>Bisa. Di aplikasi buka Pengaturan › Upgrade ke Premium, lalu ketuk Coba semua fitur gratis 7 hari. Tanpa kode dan tanpa bayar, satu kali per HP. Setelah selesai, catatanmu tetap aman.</p></details><details><summary>Premium berlangganan?</summary><p>Tidak. Sekali bayar. Pindah HP? Lepas kode dari HP lama di Pengaturan › Premium, lalu aktifkan di HP baru.</p></details><details><summary>Ada di Play Store?</summary><p id=faqPlay>Saat ini dipasang langsung dari browser, lebih ringan dan tanpa iklan. Versi Play Store sedang disiapkan.</p></details>
+</section>
+<section>
+  <div class="final"><h2>Mulai atur uangmu hari ini</h2><p>Gratis, tanpa daftar email. Cukup username dan PIN.</p><a class="btn" href="./">Coba FinFlow gratis</a></div>
+</section>
+<footer><span>© <span id="yr">2026</span> FinFlow, dikelola <span id="seller">Frmn</span></span><nav><a href="kebijakan-privasi.html">Kebijakan privasi</a><a href="kebijakan-privasi.html#premium">Ketentuan Premium</a><a id="waLink" href="#">Kontak</a></nav></footer>
 </div>
 <script>
   /* ===== Ubah di sini ===== */
   var PROMO = {
     buyUrl: '',               // link beli: Lynk.id / Karyakarsa / https://wa.me/62812xxxx?text=Mau%20beli%20FinFlow%20Premium
-    price: 'Rp 13.000',
+    price: 'Rp13.000',
     maxHp: 2,
     seller: 'Frmn',
     whatsapp: '6285648115397'              // contoh: 6281234567890

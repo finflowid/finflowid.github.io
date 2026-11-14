@@ -1,5 +1,5 @@
 {
-  "name": "FinFlow — Catatan Keuangan",
+  "name": "FinFlow",
   "short_name": "FinFlow",
   "description": "Catat pemasukan dan pengeluaran, atur budget, target tabungan, dan utang-piutang. Bisa dipakai tanpa internet.",
   "id": "./",
@@ -7,8 +7,8 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F3F5FA",
-  "theme_color": "#4F46E5",
+  "background_color": "#F6F6F3",
+  "theme_color": "#1A3358",
   "lang": "id",
   "dir": "ltr",
   "categories": [
@@ -87,7 +87,7 @@
       "sizes": "780x1688",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Beranda: saldo semua dompet dan jatah harian"
+      "label": "Beranda: total saldo, ringkasan bulan ini, dan dompet"
     },
     {
       "src": "screenshots/statistik.png",

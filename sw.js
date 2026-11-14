@@ -1,9 +1,11 @@
-/* FinFlow service worker — membuat aplikasi bisa dibuka tanpa internet.
-   Setiap kali index.html diperbarui, naikkan angka VERSION supaya HP pengguna mengambil versi baru. */
-const VERSION = '6.4.0';
+/* FinFlow service worker: membuat aplikasi bisa dibuka tanpa internet.
+   Setiap kali index.html diperbarui, naikkan angka VERSION supaya HP pengguna mengambil versi baru.
+   Kalau isi folder lib/ atau fonts/ diganti tanpa mengganti nama file, naikkan juga angka di LIB_CACHE. */
+const VERSION = '6.5.0';
 const CACHE = 'finflow-app-' + VERSION;
-const LIB_CACHE = 'finflowlib-v1';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png'];
+const LIB_CACHE = 'finflowlib-v2';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './fonts/plex-400.woff2', './fonts/plex-500.woff2', './fonts/plex-600.woff2',
+  './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -11,11 +13,18 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys()
-    .then(keys => Promise.all(keys.filter(k => k.indexOf('finflow-app-') === 0 && k !== CACHE).map(k => caches.delete(k))))
+    .then(keys => Promise.all(keys.filter(k => (k.indexOf('finflow-app-') === 0 && k !== CACHE) || (k.indexOf('finflowlib-') === 0 && k !== LIB_CACHE)).map(k => caches.delete(k))))
     .then(() => self.clients.claim()));
 });
 
 function withTimeout(p, ms) { return new Promise((res, rej) => { const t = setTimeout(() => rej(new Error('timeout')), ms); p.then(v => { clearTimeout(t); res(v); }, err => { clearTimeout(t); rej(err); }); }); }
+// cari di semua cache dulu (font sudah ikut tersimpan saat pemasangan), baru ambil dari jaringan
+function libFirst(req) {
+  return caches.match(req).then(hit => hit || fetch(req).then(res => {
+    if (res.ok || res.type === 'opaque') { const copy = res.clone(); caches.open(LIB_CACHE).then(c => c.put(req, copy)); }
+    return res;
+  }));
+}
 
 self.addEventListener('fetch', e => {
   const req = e.request;
@@ -36,17 +45,12 @@ self.addEventListener('fetch', e => {
     return;
   }
   if (req.method !== 'GET') return;
-  // sinkron Google Sheets selalu lewat jaringan
+  // sinkron Google Sheets dan lisensi selalu lewat jaringan
   if (/(^|\.)script\.google\.com$|googleusercontent\.com$/.test(url.hostname)) return;
 
-  // library PDF/Excel & font: simpan setelah pertama kali diunduh
-  if (url.hostname === 'cdnjs.cloudflare.com' || url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
-    e.respondWith(caches.open(LIB_CACHE).then(async c => {
-      const hit = await c.match(req); if (hit) return hit;
-      const res = await fetch(req); if (res.ok || res.type === 'opaque') c.put(req, res.clone()); return res;
-    }));
-    return;
-  }
+  // library PDF, Excel, pembaca struk, dan font: simpan setelah pertama kali dipakai (nama file sudah memuat versi)
+  if (url.origin === self.location.origin && (url.pathname.indexOf('/lib/') >= 0 || url.pathname.indexOf('/fonts/') >= 0)) { e.respondWith(libFirst(req)); return; }
+  if (url.hostname === 'cdn.jsdelivr.net' || url.hostname === 'cdnjs.cloudflare.com') { e.respondWith(libFirst(req)); return; }
   if (url.origin !== self.location.origin) return;
 
   // halaman utama: ambil versi terbaru bila online (maks 4 detik), kalau tidak pakai salinan offline
