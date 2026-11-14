@@ -459,6 +459,11 @@ details.faq p{margin:0;padding:0 0 14px;font-size:14px;line-height:1.55;color:va
 
 button.note{align-items:center}
 .hd{position:relative}
+/* pemberitahuan versi baru */
+.upd-bar{position:fixed;left:12px;right:12px;bottom:calc(var(--nav-h) + 12px + env(safe-area-inset-bottom));z-index:40;max-width:456px;margin:0 auto;display:flex;align-items:center;gap:8px;padding:8px 6px 8px 16px;border-radius:var(--r-lg);background:var(--hd);color:#fff;font-size:14px;line-height:1.4;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.upd-bar .grow{flex:1}
+.upd-bar .btn.sm{flex:none;margin:0;background:#fff;color:#1A3358;border-color:#fff}
+.upd-bar .x-btn{color:var(--on-hd2)}
 </style>
 </head>
 <body>
@@ -653,7 +658,7 @@ function txGroups(list) {
    ===================================================================== */
 const APP = {
   name: 'FinFlow',
-  version: '6.5.0',
+  version: '6.5.1',
   tagline: 'Catatan keuangan pribadi untuk mahasiswa dan keluarga.',
   contact: 'WA 0856-4811-5397 (Frmn)',          // contoh: 'WA 0812-xxxx-xxxx' atau email, tampil di Pengaturan > Tentang
   backupRemindDays: 14, // ingatkan backup jika belum backup sekian hari (mode offline)
@@ -3757,7 +3762,25 @@ function setupPwa() {
   if (!IS_WEB) return;
   const add = (rel, href) => { if ($('link[rel="' + rel + '"]')) return; const l = document.createElement('link'); l.rel = rel; l.href = href; document.head.appendChild(l); };
   add('manifest', 'manifest.webmanifest'); add('apple-touch-icon', 'icons/apple-touch-icon.png');
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator) {
+    let hadCtl = !!navigator.serviceWorker.controller, lastCheck = Date.now();
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState !== 'visible' || Date.now() - lastCheck < 15 * 60 * 1000) return;
+        lastCheck = Date.now(); reg.update().catch(() => {});
+      });
+    }).catch(() => {});
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (!hadCtl) { hadCtl = true; return; } updateReady(); });
+  }
+}
+function updateReady() {
+  if (!S.user || $('#app').classList.contains('hidden')) { location.reload(); return; }
+  if ($('#updBar')) return;
+  const el = document.createElement('div'); el.id = 'updBar'; el.className = 'upd-bar'; el.setAttribute('role', 'status');
+  el.innerHTML = '<span class="grow">Versi baru sudah siap.</span><button type="button" class="btn sm" data-x="reload">Muat ulang</button><button type="button" class="x-btn" data-x="later" aria-label="Nanti saja">' + IC('x') + '</button>';
+  document.body.appendChild(el);
+  el.querySelector('[data-x=reload]').onclick = () => location.reload();
+  el.querySelector('[data-x=later]').onclick = () => el.remove();
 }
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; updateInstallSlot(); });
 window.addEventListener('appinstalled', () => { installEvt = null; updateInstallSlot(); toast('FinFlow sudah terpasang di HP', 'success'); });

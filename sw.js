@@ -1,7 +1,7 @@
 /* FinFlow service worker: membuat aplikasi bisa dibuka tanpa internet.
    Setiap kali index.html diperbarui, naikkan angka VERSION supaya HP pengguna mengambil versi baru.
    Kalau isi folder lib/ atau fonts/ diganti tanpa mengganti nama file, naikkan juga angka di LIB_CACHE. */
-const VERSION = '6.5.0';
+const VERSION = '6.5.1';
 const CACHE = 'finflow-app-' + VERSION;
 const LIB_CACHE = 'finflowlib-v2';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './fonts/plex-400.woff2', './fonts/plex-500.woff2', './fonts/plex-600.woff2',
@@ -53,9 +53,10 @@ self.addEventListener('fetch', e => {
   if (url.hostname === 'cdn.jsdelivr.net' || url.hostname === 'cdnjs.cloudflare.com') { e.respondWith(libFirst(req)); return; }
   if (url.origin !== self.location.origin) return;
 
-  // halaman utama: ambil versi terbaru bila online (maks 4 detik), kalau tidak pakai salinan offline
+  // halaman utama: ambil versi terbaru bila online (maks 4 detik), kalau tidak pakai salinan offline.
+  // no-cache: selalu tanya ke server dulu, supaya tidak tertahan salinan lama di cache browser
   if (req.mode === 'navigate') {
-    e.respondWith(withTimeout(fetch(req), 4000)
+    e.respondWith(withTimeout(fetch(req, { cache: 'no-cache' }), 4000)
       .then(res => { if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put('./index.html', copy)); } return res; })
       .catch(() => caches.match('./index.html').then(r => r || caches.match('./'))));
     return;
